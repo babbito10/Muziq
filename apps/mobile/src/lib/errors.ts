@@ -7,9 +7,12 @@ export function errorMessage(error: unknown): string {
 }
 
 /** Validate with a shared schema; returns field errors or the parsed value. */
-export function validate<S extends z.ZodType>(schema: S, values: unknown):
-  | { ok: true; data: z.output<S> }
-  | { ok: false; errors: Record<string, string> } {
+export function validate<S extends z.ZodType>(
+  schema: S,
+  values: unknown,
+): { ok: true; data: z.output<S> } | { ok: false; errors: Record<string, string> } {
   const result = schema.safeParse(values);
-  return result.success ? { ok: true, data: result.data } : { ok: false, errors: fieldErrors(toValidationIssues(result.error)) };
+  return result.success
+    ? { ok: true, data: result.data }
+    : { ok: false, errors: fieldErrors(toValidationIssues(result.error)) };
 }

@@ -22,7 +22,9 @@ export function MfaSection() {
   useEffect(() => {
     if (!setup) return setQr(null);
     // Rendered locally — the secret never leaves the browser for a third-party QR service.
-    QRCode.toDataURL(setup.otpauthUrl, { margin: 1, width: 192 }).then(setQr).catch(() => setQr(null));
+    QRCode.toDataURL(setup.otpauthUrl, { margin: 1, width: 192 })
+      .then(setQr)
+      .catch(() => setQr(null));
   }, [setup]);
 
   const confirm = useZodForm(totpConfirmSchema, async (values) => {
@@ -47,14 +49,41 @@ export function MfaSection() {
         action={user.mfaEnabled ? <Badge tone="success">On</Badge> : <Badge>Off</Badge>}
       />
       {user.mfaEnabled ? (
-        <form noValidate className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => disable.handleSubmit(e, { code, ...(user.hasPassword ? { password } : {}) })}>
-          {disable.formError && <Alert tone="danger" className="sm:col-span-2">{disable.formError}</Alert>}
-          {user.hasPassword && (
-            <TextField label="Password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={disable.errors.password} />
+        <form
+          noValidate
+          className="grid gap-4 sm:grid-cols-2"
+          onSubmit={(e) =>
+            disable.handleSubmit(e, { code, ...(user.hasPassword ? { password } : {}) })
+          }
+        >
+          {disable.formError && (
+            <Alert tone="danger" className="sm:col-span-2">
+              {disable.formError}
+            </Alert>
           )}
-          <TextField label="Current code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} error={disable.errors.code} />
+          {user.hasPassword && (
+            <TextField
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={disable.errors.password}
+            />
+          )}
+          <TextField
+            label="Current code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+            error={disable.errors.code}
+          />
           <div className="sm:col-span-2">
-            <Button type="submit" variant="danger" loading={disable.submitting}>Turn off two-step verification</Button>
+            <Button type="submit" variant="danger" loading={disable.submitting}>
+              Turn off two-step verification
+            </Button>
           </div>
         </form>
       ) : setup ? (
@@ -62,21 +91,52 @@ export function MfaSection() {
           <div className="flex shrink-0 flex-col items-center gap-2">
             {qr ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qr} alt="QR code to add MusicVerse to your authenticator app" className="h-48 w-48 rounded-xl bg-white p-2" />
+              <img
+                src={qr}
+                alt="QR code to add MusicVerse to your authenticator app"
+                className="h-48 w-48 rounded-xl bg-white p-2"
+              />
             ) : (
-              <div className="h-48 w-48 animate-pulse rounded-xl bg-surface-raised" aria-hidden="true" />
+              <div
+                className="h-48 w-48 animate-pulse rounded-xl bg-surface-raised"
+                aria-hidden="true"
+              />
             )}
           </div>
-          <form noValidate className="flex flex-1 flex-col gap-4" onSubmit={(e) => confirm.handleSubmit(e, { code })}>
+          <form
+            noValidate
+            className="flex flex-1 flex-col gap-4"
+            onSubmit={(e) => confirm.handleSubmit(e, { code })}
+          >
             <p className="text-sm text-fg-muted">
               Scan the QR code with an authenticator app, or enter this key manually:
             </p>
-            <code className="break-all rounded-lg bg-bg-elevated px-3 py-2 font-mono text-sm text-fg">{setup.secret}</code>
+            <code className="break-all rounded-lg bg-bg-elevated px-3 py-2 font-mono text-sm text-fg">
+              {setup.secret}
+            </code>
             {confirm.formError && <Alert tone="danger">{confirm.formError}</Alert>}
-            <TextField label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} error={confirm.errors.code} />
+            <TextField
+              label="6-digit code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              error={confirm.errors.code}
+            />
             <div className="flex gap-2">
-              <Button type="submit" loading={confirm.submitting}>Turn on</Button>
-              <Button variant="ghost" onClick={() => { setSetup(null); setCode(''); }}>Cancel</Button>
+              <Button type="submit" loading={confirm.submitting}>
+                Turn on
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSetup(null);
+                  setCode('');
+                }}
+              >
+                Cancel
+              </Button>
             </div>
           </form>
         </div>

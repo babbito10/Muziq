@@ -2,7 +2,16 @@
 
 import { hasPermissions } from '@musicverse/auth';
 import type { CurrentUser, LoginResponse, PermissionKey } from '@musicverse/types';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { api, onSessionExpired } from './api';
 
 type Status = 'loading' | 'authenticated' | 'anonymous';

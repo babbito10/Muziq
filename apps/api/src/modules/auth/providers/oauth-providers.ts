@@ -1,6 +1,11 @@
 import type { OAuthProvider } from '@musicverse/types';
 import type { AppConfig } from '../../../config/env';
-import { APPLE_ISSUERS, GOOGLE_ISSUERS, type IdTokenVerifier, JwksIdTokenVerifier } from './id-token-verifier';
+import {
+  APPLE_ISSUERS,
+  GOOGLE_ISSUERS,
+  type IdTokenVerifier,
+  JwksIdTokenVerifier,
+} from './id-token-verifier';
 
 export const ID_TOKEN_VERIFIERS = Symbol('ID_TOKEN_VERIFIERS');
 export type IdTokenVerifiers = Record<OAuthProvider, IdTokenVerifier>;

@@ -19,8 +19,10 @@ export const RequirePermissions = (...permissions: PermissionKey[]) =>
 export const CsrfProtected = () => SetMetadata(CSRF_PROTECTED, true);
 
 /** Inject the authenticated principal. */
-export const CurrentAuth = createParamDecorator((_data: unknown, ctx: ExecutionContext): AuthContext => {
-  const request = ctx.switchToHttp().getRequest<Request>();
-  if (!request.auth) throw AppError.unauthorized();
-  return request.auth;
-});
+export const CurrentAuth = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): AuthContext => {
+    const request = ctx.switchToHttp().getRequest<Request>();
+    if (!request.auth) throw AppError.unauthorized();
+    return request.auth;
+  },
+);

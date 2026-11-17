@@ -15,7 +15,10 @@ export function normalisePreferences(stored: unknown): UserPreferences {
   return {
     theme: value.theme ?? DEFAULT_PREFERENCES.theme,
     explicitContent: value.explicitContent ?? DEFAULT_PREFERENCES.explicitContent,
-    emailNotifications: { ...DEFAULT_PREFERENCES.emailNotifications, ...(value.emailNotifications ?? {}) },
+    emailNotifications: {
+      ...DEFAULT_PREFERENCES.emailNotifications,
+      ...(value.emailNotifications ?? {}),
+    },
   };
 }
 

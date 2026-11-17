@@ -17,7 +17,11 @@ describe('loadConfig', () => {
   });
 
   it('parses lists and booleans', () => {
-    const config = loadConfig({ ...base, CORS_ORIGINS: 'http://a, http://b', COOKIE_SECURE: 'false' });
+    const config = loadConfig({
+      ...base,
+      CORS_ORIGINS: 'http://a, http://b',
+      COOKIE_SECURE: 'false',
+    });
     expect(config.corsOrigins).toEqual(['http://a', 'http://b']);
     expect(config.auth.cookieSecure).toBe(false);
   });
@@ -36,7 +40,13 @@ describe('loadConfig', () => {
   it('refuses the development mail transport and insecure cookies in production', () => {
     expect(() => loadConfig({ ...base, NODE_ENV: 'production' })).toThrow(/MAIL_TRANSPORT/);
     expect(() =>
-      loadConfig({ ...base, NODE_ENV: 'production', MAIL_TRANSPORT: 'smtp', SMTP_HOST: 'smtp', COOKIE_SECURE: 'false' }),
+      loadConfig({
+        ...base,
+        NODE_ENV: 'production',
+        MAIL_TRANSPORT: 'smtp',
+        SMTP_HOST: 'smtp',
+        COOKIE_SECURE: 'false',
+      }),
     ).toThrow(/COOKIE_SECURE/);
   });
 });

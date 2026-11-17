@@ -20,7 +20,12 @@ export class VerificationTokenService {
     await this.prisma.$transaction([
       this.prisma.verificationToken.deleteMany({ where: { userId, type, consumedAt: null } }),
       this.prisma.verificationToken.create({
-        data: { userId, type, tokenHash: sha256Hex(token), expiresAt: new Date(Date.now() + TOKEN_TTL_MS[type]) },
+        data: {
+          userId,
+          type,
+          tokenHash: sha256Hex(token),
+          expiresAt: new Date(Date.now() + TOKEN_TTL_MS[type]),
+        },
       }),
     ]);
     return token;
@@ -35,7 +40,10 @@ export class VerificationTokenService {
       data: { consumedAt: now },
     });
     if (count !== 1) {
-      throw AppError.badRequest('INVALID_TOKEN', 'This link is invalid or has expired. Please request a new one.');
+      throw AppError.badRequest(
+        'INVALID_TOKEN',
+        'This link is invalid or has expired. Please request a new one.',
+      );
     }
     const record = await this.prisma.verificationToken.findUniqueOrThrow({ where: { tokenHash } });
     return record.userId;

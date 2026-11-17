@@ -2,7 +2,15 @@ import { createHash } from 'node:crypto';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { exportJWK, generateKeyPair, type KeyLike, SignJWT } from 'jose';
-import { API, createTestApp, login, PASSWORD, registerUser, resetData, type TestContext } from './helpers';
+import {
+  API,
+  createTestApp,
+  login,
+  PASSWORD,
+  registerUser,
+  resetData,
+  type TestContext,
+} from './helpers';
 
 const GOOGLE_CLIENT = 'test-google-client.apps.googleusercontent.com';
 const APPLE_CLIENT = 'app.musicverse.ios';
@@ -16,8 +24,13 @@ describe('Social sign-in (ID token verification)', () => {
     afterAll(() => ctx.close());
 
     it('reports providers as unavailable and refuses with 503', async () => {
-      await ctx.http.get(`${API}/auth/providers`).expect(200, { password: true, google: false, apple: false });
-      const res = await ctx.http.post(`${API}/auth/oauth/google`).send({ idToken: 'x'.repeat(40) }).expect(503);
+      await ctx.http
+        .get(`${API}/auth/providers`)
+        .expect(200, { password: true, google: false, apple: false });
+      const res = await ctx.http
+        .post(`${API}/auth/oauth/google`)
+        .send({ idToken: 'x'.repeat(40) })
+        .expect(503);
       expect(res.body.error.code).toBe('PROVIDER_NOT_CONFIGURED');
     });
   });
@@ -32,7 +45,12 @@ describe('Social sign-in (ID token verification)', () => {
       const pair = await generateKeyPair('RS256');
       privateKey = pair.privateKey;
       otherKey = (await generateKeyPair('RS256')).privateKey;
-      const jwk = { ...(await exportJWK(pair.publicKey)), kid: 'test-key', alg: 'RS256', use: 'sig' };
+      const jwk = {
+        ...(await exportJWK(pair.publicKey)),
+        kid: 'test-key',
+        alg: 'RS256',
+        use: 'sig',
+      };
       server = createServer((_req, res) => {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ keys: [jwk] }));
@@ -52,7 +70,10 @@ describe('Social sign-in (ID token verification)', () => {
       server.close();
     });
 
-    function googleToken(claims: Record<string, unknown>, opts: { key?: KeyLike; aud?: string; iss?: string } = {}) {
+    function googleToken(
+      claims: Record<string, unknown>,
+      opts: { key?: KeyLike; aud?: string; iss?: string } = {},
+    ) {
       return new SignJWT({ email_verified: true, ...claims })
         .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
         .setIssuer(opts.iss ?? 'https://accounts.google.com')
@@ -64,11 +85,17 @@ describe('Social sign-in (ID token verification)', () => {
     }
 
     it('reports configured providers', async () => {
-      await ctx.http.get(`${API}/auth/providers`).expect(200, { password: true, google: true, apple: true });
+      await ctx.http
+        .get(`${API}/auth/providers`)
+        .expect(200, { password: true, google: true, apple: true });
     });
 
     it('creates a verified account on first Google sign-in and reuses it afterwards', async () => {
-      const idToken = await googleToken({ sub: 'g-1', email: 'Fan@Example.com', name: 'Fan Person' });
+      const idToken = await googleToken({
+        sub: 'g-1',
+        email: 'Fan@Example.com',
+        name: 'Fan Person',
+      });
       const first = await ctx.http.post(`${API}/auth/oauth/google`).send({ idToken }).expect(200);
       expect(first.body.user).toMatchObject({
         email: 'fan@example.com',
@@ -95,7 +122,10 @@ describe('Social sign-in (ID token verification)', () => {
 
     it('links to an existing verified-email account', async () => {
       const existing = await registerUser(ctx, { email: 'linked@example.com' });
-      await ctx.prisma.user.update({ where: { id: existing.id }, data: { emailVerifiedAt: new Date() } });
+      await ctx.prisma.user.update({
+        where: { id: existing.id },
+        data: { emailVerifiedAt: new Date() },
+      });
       const idToken = await googleToken({ sub: 'g-2', email: 'linked@example.com' });
       const res = await ctx.http.post(`${API}/auth/oauth/google`).send({ idToken }).expect(200);
       expect(res.body.user.id).toBe(existing.id);
@@ -107,13 +137,21 @@ describe('Social sign-in (ID token verification)', () => {
       const squatter = await registerUser(ctx, { email: 'victim@example.com' });
       const idToken = await googleToken({ sub: 'g-3', email: 'victim@example.com' });
       const res = await ctx.http.post(`${API}/auth/oauth/google`).send({ idToken }).expect(200);
-      expect(res.body.user).toMatchObject({ id: squatter.id, emailVerified: true, hasPassword: false });
+      expect(res.body.user).toMatchObject({
+        id: squatter.id,
+        emailVerified: true,
+        hasPassword: false,
+      });
       await login(ctx, 'victim@example.com', PASSWORD).expect(401);
     });
 
     it('refuses to link when the provider has not verified the email', async () => {
       await registerUser(ctx, { email: 'unverified@example.com' });
-      const idToken = await googleToken({ sub: 'g-4', email: 'unverified@example.com', email_verified: false });
+      const idToken = await googleToken({
+        sub: 'g-4',
+        email: 'unverified@example.com',
+        email_verified: false,
+      });
       const res = await ctx.http.post(`${API}/auth/oauth/google`).send({ idToken }).expect(409);
       expect(res.body.error.code).toBe('EMAIL_ALREADY_REGISTERED');
     });
@@ -121,7 +159,11 @@ describe('Social sign-in (ID token verification)', () => {
     it('requires and checks the hashed nonce for Apple', async () => {
       const nonce = 'raw-nonce-1234567890';
       const sign = (nonceClaim?: string) =>
-        new SignJWT({ email: 'apple@privaterelay.appleid.com', email_verified: 'true', ...(nonceClaim ? { nonce: nonceClaim } : {}) })
+        new SignJWT({
+          email: 'apple@privaterelay.appleid.com',
+          email_verified: 'true',
+          ...(nonceClaim ? { nonce: nonceClaim } : {}),
+        })
           .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
           .setIssuer('https://appleid.apple.com')
           .setAudience(APPLE_CLIENT)
@@ -131,17 +173,30 @@ describe('Social sign-in (ID token verification)', () => {
           .sign(privateKey);
       const hashed = createHash('sha256').update(nonce).digest('hex');
 
-      await ctx.http.post(`${API}/auth/oauth/apple`).send({ idToken: await sign(hashed) }).expect(401);
-      await ctx.http.post(`${API}/auth/oauth/apple`).send({ idToken: await sign(hashed), nonce: 'different-nonce' }).expect(401);
+      await ctx.http
+        .post(`${API}/auth/oauth/apple`)
+        .send({ idToken: await sign(hashed) })
+        .expect(401);
+      await ctx.http
+        .post(`${API}/auth/oauth/apple`)
+        .send({ idToken: await sign(hashed), nonce: 'different-nonce' })
+        .expect(401);
       const ok = await ctx.http
         .post(`${API}/auth/oauth/apple`)
         .send({ idToken: await sign(hashed), nonce, displayName: 'Apple Fan' })
         .expect(200);
-      expect(ok.body.user).toMatchObject({ emailVerified: true, linkedProviders: ['apple'], profile: { displayName: 'Apple Fan' } });
+      expect(ok.body.user).toMatchObject({
+        emailVerified: true,
+        linkedProviders: ['apple'],
+        profile: { displayName: 'Apple Fan' },
+      });
     });
 
     it('rejects unknown providers', async () => {
-      await ctx.http.post(`${API}/auth/oauth/facebook`).send({ idToken: 'x'.repeat(40) }).expect(400);
+      await ctx.http
+        .post(`${API}/auth/oauth/facebook`)
+        .send({ idToken: 'x'.repeat(40) })
+        .expect(400);
     });
   });
 });

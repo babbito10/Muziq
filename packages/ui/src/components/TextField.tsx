@@ -21,7 +21,10 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={inputId} className={cn('text-sm font-medium text-fg', hideLabel && 'sr-only')}>
+      <label
+        htmlFor={inputId}
+        className={cn('text-sm font-medium text-fg', hideLabel && 'sr-only')}
+      >
         {label}
         {required && (
           <span className="text-fg-subtle" aria-hidden="true">

@@ -17,7 +17,9 @@ function LoginContent() {
       footer={
         <>
           New here?{' '}
-          <Link href="/register" className="font-semibold text-primary hover:underline">Create an account</Link>
+          <Link href="/register" className="font-semibold text-primary hover:underline">
+            Create an account
+          </Link>
         </>
       }
     >

@@ -27,20 +27,44 @@ export default function Account() {
 
   if (!user) return null;
   return (
-    <ScrollView style={{ backgroundColor: colors.bg }} contentContainerStyle={{ padding: spacing(5), gap: spacing(4) }}>
+    <ScrollView
+      style={{ backgroundColor: colors.bg }}
+      contentContainerStyle={{ padding: spacing(5), gap: spacing(4) }}
+    >
       <Heading>Account</Heading>
       <Body muted>{user.email}</Body>
       <Body>Two-step verification: {user.mfaEnabled ? 'On' : 'Off'}</Body>
-      <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700', marginTop: spacing(2) }}>Signed-in devices</Text>
+      <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700', marginTop: spacing(2) }}>
+        Signed-in devices
+      </Text>
       {error ? <Banner tone="danger">{error}</Banner> : null}
-      {!sessions && !error ? <ActivityIndicator color={colors.primary} accessibilityLabel="Loading sessions" /> : null}
+      {!sessions && !error ? (
+        <ActivityIndicator color={colors.primary} accessibilityLabel="Loading sessions" />
+      ) : null}
       {sessions?.map((s) => (
-        <View key={s.id} style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing(3), borderWidth: 1, borderColor: colors.border }}>
-          <Text style={{ color: colors.text, fontWeight: '600' }}>{s.clientType}{s.current ? ' · this device' : ''}</Text>
-          <Text style={{ color: colors.textSubtle }}>Last active {new Date(s.lastUsedAt).toLocaleString()}</Text>
+        <View
+          key={s.id}
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: radius.md,
+            padding: spacing(3),
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text style={{ color: colors.text, fontWeight: '600' }}>
+            {s.clientType}
+            {s.current ? ' · this device' : ''}
+          </Text>
+          <Text style={{ color: colors.textSubtle }}>
+            Last active {new Date(s.lastUsedAt).toLocaleString()}
+          </Text>
         </View>
       ))}
-      <Body muted>Manage your profile, creator capabilities and security on the web at your MusicVerse account page.</Body>
+      <Body muted>
+        Manage your profile, creator capabilities and security on the web at your MusicVerse account
+        page.
+      </Body>
       <PrimaryButton
         title="Sign out"
         variant="secondary"

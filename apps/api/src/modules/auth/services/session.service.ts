@@ -72,13 +72,22 @@ export class SessionService {
 
     if (!session) {
       await this.detectReuse(hash, now, meta);
-      throw AppError.unauthorized('INVALID_TOKEN', 'Your session is no longer valid. Please sign in again.');
+      throw AppError.unauthorized(
+        'INVALID_TOKEN',
+        'Your session is no longer valid. Please sign in again.',
+      );
     }
     if (session.revokedAt || session.expiresAt <= now || session.clientType !== clientType) {
-      throw AppError.unauthorized('INVALID_TOKEN', 'Your session is no longer valid. Please sign in again.');
+      throw AppError.unauthorized(
+        'INVALID_TOKEN',
+        'Your session is no longer valid. Please sign in again.',
+      );
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: session.userId }, select: { status: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { status: true },
+    });
     if (!user || user.status !== 'active') {
       await this.revoke(session.id, 'account_suspended');
       throw AppError.forbidden('Your account is not active.', 'ACCOUNT_SUSPENDED');
@@ -98,7 +107,10 @@ export class SessionService {
       },
     });
     if (count !== 1) {
-      throw AppError.unauthorized('INVALID_TOKEN', 'Your session was refreshed elsewhere. Please retry.');
+      throw AppError.unauthorized(
+        'INVALID_TOKEN',
+        'Your session was refreshed elsewhere. Please retry.',
+      );
     }
     return { session: { ...session, lastUsedAt: now }, refreshToken: nextToken };
   }
@@ -136,9 +148,17 @@ export class SessionService {
     return count > 0;
   }
 
-  async revokeAllForUser(userId: string, reason: SessionRevokeReason, exceptSessionId?: string): Promise<number> {
+  async revokeAllForUser(
+    userId: string,
+    reason: SessionRevokeReason,
+    exceptSessionId?: string,
+  ): Promise<number> {
     const sessions = await this.prisma.session.findMany({
-      where: { userId, revokedAt: null, ...(exceptSessionId ? { id: { not: exceptSessionId } } : {}) },
+      where: {
+        userId,
+        revokedAt: null,
+        ...(exceptSessionId ? { id: { not: exceptSessionId } } : {}),
+      },
       select: { id: true },
     });
     const ids = sessions.map((s) => s.id);

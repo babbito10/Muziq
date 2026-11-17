@@ -24,7 +24,9 @@ export class MfaController {
 
   @Post('setup')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Begin TOTP enrolment; returns an otpauth:// URI for authenticator apps' })
+  @ApiOperation({
+    summary: 'Begin TOTP enrolment; returns an otpauth:// URI for authenticator apps',
+  })
   setup(@CurrentAuth() auth: AuthContext): Promise<TotpSetupResponse> {
     return this.mfa.beginSetup(auth.userId);
   }

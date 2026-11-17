@@ -6,22 +6,37 @@ const me = { id: 'admin-1', roles: ['listener', 'admin'] };
 jest.mock('@/lib/auth-context', () => ({
   useAdminAuth: () => ({ user: me, can: (p: string) => p !== 'admin:roles.manage_staff' }),
 }));
-jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
 
 const target = {
-  id: 'user-1', email: 'u@example.com', displayName: 'U', status: 'active', emailVerified: true,
-  roles: ['listener'], createdAt: new Date().toISOString(), lastLoginAt: null, mfaEnabled: false,
-  activeSessions: 1, linkedProviders: [],
+  id: 'user-1',
+  email: 'u@example.com',
+  displayName: 'U',
+  status: 'active',
+  emailVerified: true,
+  roles: ['listener'],
+  createdAt: new Date().toISOString(),
+  lastLoginAt: null,
+  mfaEnabled: false,
+  activeSessions: 1,
+  linkedProviders: [],
 };
 const getUser = jest.fn();
 const grantRole = jest.fn();
 const suspend = jest.fn();
 jest.mock('@/lib/api', () => ({
-  api: { admin: {
-    getUser: (...a: unknown[]) => getUser(...a),
-    grantRole: (...a: unknown[]) => grantRole(...a),
-    suspend: (...a: unknown[]) => suspend(...a),
-  } },
+  api: {
+    admin: {
+      getUser: (...a: unknown[]) => getUser(...a),
+      grantRole: (...a: unknown[]) => grantRole(...a),
+      suspend: (...a: unknown[]) => suspend(...a),
+    },
+  },
 }));
 
 beforeEach(() => {
@@ -48,7 +63,10 @@ describe('UserDetail', () => {
 
     const suspendButton = screen.getByRole('button', { name: 'Suspend' });
     expect(suspendButton).toBeDisabled();
-    await userEvent.type(screen.getByLabelText('Reason (recorded in the audit log)'), 'Spam uploads');
+    await userEvent.type(
+      screen.getByLabelText('Reason (recorded in the audit log)'),
+      'Spam uploads',
+    );
     await userEvent.click(suspendButton);
     expect(suspend).toHaveBeenCalledWith('user-1', { reason: 'Spam uploads' });
     expect(await screen.findByRole('button', { name: 'Reinstate' })).toBeInTheDocument();

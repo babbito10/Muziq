@@ -12,7 +12,9 @@ import { errorMessage } from '@/lib/errors';
 function VerifyContent() {
   const token = useSearchParams().get('token');
   const { status: authStatus, reload } = useAuth();
-  const [state, setState] = useState<'verifying' | 'verified' | 'error'>(token ? 'verifying' : 'error');
+  const [state, setState] = useState<'verifying' | 'verified' | 'error'>(
+    token ? 'verifying' : 'error',
+  );
   const [message, setMessage] = useState<string>('This verification link is incomplete.');
   const started = useRef(false);
 
@@ -44,8 +46,12 @@ function VerifyContent() {
       )}
       {state === 'verified' && (
         <div className="flex flex-col gap-4">
-          <Alert tone="success" title="Email verified">Creator capabilities are now unlocked for your account.</Alert>
-          <Link href="/" className={buttonClasses('primary', 'md', true)}>Continue</Link>
+          <Alert tone="success" title="Email verified">
+            Creator capabilities are now unlocked for your account.
+          </Alert>
+          <Link href="/" className={buttonClasses('primary', 'md', true)}>
+            Continue
+          </Link>
         </div>
       )}
       {state === 'error' && (

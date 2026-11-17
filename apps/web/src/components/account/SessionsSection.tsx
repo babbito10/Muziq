@@ -1,17 +1,48 @@
 'use client';
 
 import type { SessionSummary } from '@musicverse/types';
-import { Alert, Badge, Button, Card, CardHeader, EmptyState, LoadingRegion, Skeleton } from '@musicverse/ui';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  EmptyState,
+  LoadingRegion,
+  Skeleton,
+} from '@musicverse/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { errorMessage } from '@/lib/errors';
 
-const CLIENT_LABEL: Record<SessionSummary['clientType'], string> = { web: 'Web', mobile: 'Mobile app', admin: 'Admin console' };
+const CLIENT_LABEL: Record<SessionSummary['clientType'], string> = {
+  web: 'Web',
+  mobile: 'Mobile app',
+  admin: 'Admin console',
+};
 
 function describeAgent(ua: string | null): string {
   if (!ua) return 'Unknown device';
-  const browser = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : null;
-  const os = /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : null;
+  const browser = /Edg\//.test(ua)
+    ? 'Edge'
+    : /Chrome\//.test(ua)
+      ? 'Chrome'
+      : /Firefox\//.test(ua)
+        ? 'Firefox'
+        : /Safari\//.test(ua)
+          ? 'Safari'
+          : null;
+  const os = /Windows/.test(ua)
+    ? 'Windows'
+    : /Android/.test(ua)
+      ? 'Android'
+      : /iPhone|iPad/.test(ua)
+        ? 'iOS'
+        : /Mac OS X/.test(ua)
+          ? 'macOS'
+          : /Linux/.test(ua)
+            ? 'Linux'
+            : null;
   return [browser, os].filter(Boolean).join(' on ') || ua.slice(0, 60);
 }
 
@@ -36,9 +67,21 @@ export function SessionsSection() {
 
   return (
     <Card>
-      <CardHeader title="Where you're signed in" description="Sign out of devices you don't recognise." />
+      <CardHeader
+        title="Where you're signed in"
+        description="Sign out of devices you don't recognise."
+      />
       {error && (
-        <Alert tone="danger" action={<Button size="sm" variant="secondary" onClick={load}>Retry</Button>}>{error}</Alert>
+        <Alert
+          tone="danger"
+          action={
+            <Button size="sm" variant="secondary" onClick={load}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       )}
       {!sessions && !error && (
         <LoadingRegion label="Loading sessions">
@@ -59,7 +102,8 @@ export function SessionsSection() {
                   {s.current && <Badge tone="primary">This device</Badge>}
                 </p>
                 <p className="text-sm text-fg-subtle">
-                  {CLIENT_LABEL[s.clientType]} · last active {dateFormat.format(new Date(s.lastUsedAt))}
+                  {CLIENT_LABEL[s.clientType]} · last active{' '}
+                  {dateFormat.format(new Date(s.lastUsedAt))}
                   {s.ipAddress ? ` · ${s.ipAddress}` : ''}
                 </p>
               </div>

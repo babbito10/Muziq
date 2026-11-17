@@ -42,14 +42,47 @@ export function ProfileSection() {
           })
         }
       >
-        {form.formError && <Alert tone="danger" className="sm:col-span-2">{form.formError}</Alert>}
-        {saved && <Alert tone="success" className="sm:col-span-2">Profile saved.</Alert>}
-        <TextField label="Display name" value={values.displayName} onChange={(e) => set('displayName', e.target.value)} error={form.errors.displayName} />
-        <TextField label="Username" value={values.username} onChange={(e) => set('username', e.target.value)} error={form.errors.username} hint="Letters, numbers, dots and underscores." />
-        <TextField label="Country" value={values.countryCode} maxLength={2} onChange={(e) => set('countryCode', e.target.value)} error={form.errors.countryCode} hint="2-letter code, e.g. KE" />
-        <TextField label="Bio" value={values.bio} onChange={(e) => set('bio', e.target.value)} error={form.errors.bio} />
+        {form.formError && (
+          <Alert tone="danger" className="sm:col-span-2">
+            {form.formError}
+          </Alert>
+        )}
+        {saved && (
+          <Alert tone="success" className="sm:col-span-2">
+            Profile saved.
+          </Alert>
+        )}
+        <TextField
+          label="Display name"
+          value={values.displayName}
+          onChange={(e) => set('displayName', e.target.value)}
+          error={form.errors.displayName}
+        />
+        <TextField
+          label="Username"
+          value={values.username}
+          onChange={(e) => set('username', e.target.value)}
+          error={form.errors.username}
+          hint="Letters, numbers, dots and underscores."
+        />
+        <TextField
+          label="Country"
+          value={values.countryCode}
+          maxLength={2}
+          onChange={(e) => set('countryCode', e.target.value)}
+          error={form.errors.countryCode}
+          hint="2-letter code, e.g. KE"
+        />
+        <TextField
+          label="Bio"
+          value={values.bio}
+          onChange={(e) => set('bio', e.target.value)}
+          error={form.errors.bio}
+        />
         <div className="sm:col-span-2">
-          <Button type="submit" loading={form.submitting}>Save profile</Button>
+          <Button type="submit" loading={form.submitting}>
+            Save profile
+          </Button>
         </div>
       </form>
     </Card>

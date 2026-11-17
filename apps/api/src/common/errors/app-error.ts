@@ -21,7 +21,10 @@ export class AppError extends Error {
   static unauthorized(code: ErrorCode = 'UNAUTHENTICATED', message = 'Authentication required.') {
     return new AppError(401, code, message);
   }
-  static forbidden(message = 'You do not have permission to perform this action.', code: ErrorCode = 'FORBIDDEN') {
+  static forbidden(
+    message = 'You do not have permission to perform this action.',
+    code: ErrorCode = 'FORBIDDEN',
+  ) {
     return new AppError(403, code, message);
   }
   static notFound(message = 'Not found.') {

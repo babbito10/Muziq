@@ -7,7 +7,10 @@ const securityHeaders = [
   { key: 'Referrer-Policy', value: 'no-referrer' },
   { key: 'Permissions-Policy', value: 'camera=(), geolocation=(), microphone=()' },
   { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
-  { key: 'Content-Security-Policy', value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+  },
 ];
 
 const config: NextConfig = {

@@ -72,7 +72,9 @@ export async function syncRolesAndPermissions(prisma: PrismaClient): Promise<voi
         },
       });
       const wanted = def.permissions.map((p) => permissionIds.get(p)!);
-      await tx.rolePermission.deleteMany({ where: { roleId: role.id, permissionId: { notIn: wanted } } });
+      await tx.rolePermission.deleteMany({
+        where: { roleId: role.id, permissionId: { notIn: wanted } },
+      });
       await tx.rolePermission.createMany({
         data: wanted.map((permissionId) => ({ roleId: role.id, permissionId })),
         skipDuplicates: true,
@@ -106,7 +108,12 @@ export async function ensureSuperAdmin(
     data: {
       email,
       emailVerifiedAt: new Date(),
-      passwordHash: await hash(password, { memoryCost: 19456, timeCost: 2, parallelism: 1, outputLen: 32 }),
+      passwordHash: await hash(password, {
+        memoryCost: 19456,
+        timeCost: 2,
+        parallelism: 1,
+        outputLen: 32,
+      }),
       profile: { create: { displayName: 'MusicVerse Admin', preferences: {} } },
       roles: { create: roles.map((role) => ({ roleId: role.id })) },
     },
@@ -118,8 +125,14 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient();
   try {
     await syncRolesAndPermissions(prisma);
-    console.info(`Synchronised ${ROLE_KEYS.length} roles and ${PERMISSION_KEYS.length} permissions.`);
-    const admin = await ensureSuperAdmin(prisma, process.env.SEED_ADMIN_EMAIL, process.env.SEED_ADMIN_PASSWORD);
+    console.info(
+      `Synchronised ${ROLE_KEYS.length} roles and ${PERMISSION_KEYS.length} permissions.`,
+    );
+    const admin = await ensureSuperAdmin(
+      prisma,
+      process.env.SEED_ADMIN_EMAIL,
+      process.env.SEED_ADMIN_PASSWORD,
+    );
     console.info(`Super administrator: ${admin}.`);
   } finally {
     await prisma.$disconnect();

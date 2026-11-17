@@ -45,7 +45,11 @@ export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Append an audit record. Pass a transaction client to make it atomic with the change. */
-  async record(entry: AuditEntry, meta: Partial<RequestMeta> = {}, db: Db = this.prisma): Promise<void> {
+  async record(
+    entry: AuditEntry,
+    meta: Partial<RequestMeta> = {},
+    db: Db = this.prisma,
+  ): Promise<void> {
     await db.auditLog.create({
       data: {
         action: entry.action,

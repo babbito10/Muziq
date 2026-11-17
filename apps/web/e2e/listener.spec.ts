@@ -6,7 +6,9 @@ test.describe('Journey 1: a listener registers', () => {
     const email = uniqueEmail('listener');
     await register(page, { email, displayName: 'Lena Listener' });
 
-    await expect(page.getByRole('alert').filter({ hasText: 'Verify your email address' })).toBeVisible();
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'Verify your email address' }),
+    ).toBeVisible();
     await expect(page.getByText('Listener', { exact: true })).toBeVisible();
 
     // Session survives a reload via the HttpOnly refresh cookie (the access token is memory-only).
@@ -24,7 +26,9 @@ test.describe('Journey 1: a listener registers', () => {
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill('wrong password here');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Email or password is incorrect.' })).toBeVisible();
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'Email or password is incorrect.' }),
+    ).toBeVisible();
     await page.getByLabel('Password').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page.getByRole('heading', { name: 'Lena Listener' })).toBeVisible();
@@ -41,7 +45,9 @@ test.describe('Journey 1: a listener registers', () => {
     await expect(page.getByText('Verify your email address')).toHaveCount(0);
   });
 
-  test('redirects anonymous visitors from account settings to sign in, then back', async ({ page }) => {
+  test('redirects anonymous visitors from account settings to sign in, then back', async ({
+    page,
+  }) => {
     const email = uniqueEmail('redirect');
     await register(page, { email, displayName: 'Rae Redirect' });
     await page.getByRole('button', { name: 'Sign out' }).click();

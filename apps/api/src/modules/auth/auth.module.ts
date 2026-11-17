@@ -25,8 +25,20 @@ import { VerificationTokenService } from './services/verification-token.service'
     SessionService,
     TokenService,
     VerificationTokenService,
-    { provide: ID_TOKEN_VERIFIERS, inject: [APP_CONFIG], useFactory: (c: AppConfig) => createIdTokenVerifiers(c) },
+    {
+      provide: ID_TOKEN_VERIFIERS,
+      inject: [APP_CONFIG],
+      useFactory: (c: AppConfig) => createIdTokenVerifiers(c),
+    },
   ],
-  exports: [AuthService, AuthzCacheService, PasswordService, RolesService, SessionService, TokenService, MfaService],
+  exports: [
+    AuthService,
+    AuthzCacheService,
+    PasswordService,
+    RolesService,
+    SessionService,
+    TokenService,
+    MfaService,
+  ],
 })
 export class AuthModule {}

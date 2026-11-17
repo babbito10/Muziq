@@ -2,10 +2,23 @@ import { Card, Logo } from '@musicverse/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-export function AuthCard({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
+export function AuthCard({
+  title,
+  subtitle,
+  children,
+  footer,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+}) {
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-10">
-      <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-brand-gradient opacity-20 blur-3xl" />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[48rem] -translate-x-1/2 rounded-full bg-brand-gradient opacity-20 blur-3xl"
+      />
       <div className="relative w-full max-w-md">
         <Link href="/" className="mb-8 flex justify-center" aria-label="MusicVerse home">
           <Logo />

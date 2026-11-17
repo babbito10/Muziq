@@ -9,7 +9,11 @@ export default function ForgotPasswordPage() {
     <AuthCard
       title="Reset your password"
       subtitle="Enter your email and we'll send you a reset link."
-      footer={<Link href="/login" className="font-semibold text-primary hover:underline">Back to sign in</Link>}
+      footer={
+        <Link href="/login" className="font-semibold text-primary hover:underline">
+          Back to sign in
+        </Link>
+      }
     >
       <ForgotPasswordForm />
     </AuthCard>

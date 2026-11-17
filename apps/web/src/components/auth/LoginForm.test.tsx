@@ -6,7 +6,12 @@ import { LoginForm } from './LoginForm';
 const login = jest.fn();
 const completeMfa = jest.fn();
 jest.mock('@/lib/auth-context', () => ({ useAuth: () => ({ login, completeMfa }) }));
-jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
 
 beforeEach(() => jest.resetAllMocks());
 
@@ -35,7 +40,13 @@ describe('LoginForm', () => {
   });
 
   it('shows API errors', async () => {
-    login.mockRejectedValue(new ApiError({ code: 'INVALID_CREDENTIALS', status: 401, message: 'Email or password is incorrect.' }));
+    login.mockRejectedValue(
+      new ApiError({
+        code: 'INVALID_CREDENTIALS',
+        status: 401,
+        message: 'Email or password is incorrect.',
+      }),
+    );
     render(<LoginForm onSuccess={jest.fn()} />);
     await fill('ada@example.com', 'wrong');
     expect(await screen.findByRole('alert')).toHaveTextContent('Email or password is incorrect.');

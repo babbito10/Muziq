@@ -19,7 +19,9 @@ export function CapabilitiesSection() {
     setError(null);
     setPendingRole(role);
     try {
-      setUser(enabled ? await api.users.removeCapability(role) : await api.users.addCapability({ role }));
+      setUser(
+        enabled ? await api.users.removeCapability(role) : await api.users.addCapability({ role }),
+      );
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -34,15 +36,24 @@ export function CapabilitiesSection() {
         description="Add the capabilities you need. You keep one account whatever you do."
       />
       {!user.emailVerified && (
-        <Alert tone="info" className="mb-4">Verify your email to add creator capabilities.</Alert>
+        <Alert tone="info" className="mb-4">
+          Verify your email to add creator capabilities.
+        </Alert>
       )}
-      {error && <Alert tone="danger" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert tone="danger" className="mb-4">
+          {error}
+        </Alert>
+      )}
       <ul className="grid gap-3 sm:grid-cols-2">
         {CAPABILITY_ROLES.map((role) => {
           const def = ROLE_DEFINITIONS[role];
           const enabled = user.roles.includes(role);
           return (
-            <li key={role} className="flex flex-col gap-3 rounded-xl border border-border bg-bg-elevated p-4">
+            <li
+              key={role}
+              className="flex flex-col gap-3 rounded-xl border border-border bg-bg-elevated p-4"
+            >
               <div className="flex items-center justify-between gap-2">
                 <h3 className="font-semibold text-fg">{def.name}</h3>
                 {enabled && <Badge tone="primary">Active</Badge>}

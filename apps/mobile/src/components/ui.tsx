@@ -16,14 +16,22 @@ export function Screen({ children }: { children: ReactNode }) {
 }
 
 export function Heading({ children }: { children: ReactNode }) {
-  return <Text accessibilityRole="header" style={styles.heading}>{children}</Text>;
+  return (
+    <Text accessibilityRole="header" style={styles.heading}>
+      {children}
+    </Text>
+  );
 }
 
 export function Body({ children, muted }: { children: ReactNode; muted?: boolean }) {
   return <Text style={[styles.body, muted && { color: colors.textMuted }]}>{children}</Text>;
 }
 
-export function Field({ label, error, ...props }: TextInputProps & { label: string; error?: string }) {
+export function Field({
+  label,
+  error,
+  ...props
+}: TextInputProps & { label: string; error?: string }) {
   return (
     <View style={{ gap: spacing(1.5) }}>
       <Text style={styles.label}>{label}</Text>
@@ -33,12 +41,21 @@ export function Field({ label, error, ...props }: TextInputProps & { label: stri
         style={[styles.input, error ? { borderColor: colors.danger } : null]}
         {...props}
       />
-      {error ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="polite" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-export function PrimaryButton({ title, loading, variant = 'primary', ...props }: PressableProps & { title: string; loading?: boolean; variant?: 'primary' | 'secondary' }) {
+export function PrimaryButton({
+  title,
+  loading,
+  variant = 'primary',
+  ...props
+}: PressableProps & { title: string; loading?: boolean; variant?: 'primary' | 'secondary' }) {
   const primary = variant === 'primary';
   return (
     <Pressable
@@ -47,7 +64,9 @@ export function PrimaryButton({ title, loading, variant = 'primary', ...props }:
       disabled={props.disabled || loading}
       style={({ pressed }) => [
         styles.button,
-        primary ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.border },
+        primary
+          ? { backgroundColor: colors.primary }
+          : { backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.border },
         (pressed || props.disabled) && { opacity: 0.7 },
       ]}
       {...props}
@@ -55,13 +74,23 @@ export function PrimaryButton({ title, loading, variant = 'primary', ...props }:
       {loading ? (
         <ActivityIndicator color={primary ? colors.primaryContrast : colors.text} />
       ) : (
-        <Text style={[styles.buttonText, { color: primary ? colors.primaryContrast : colors.text }]}>{title}</Text>
+        <Text
+          style={[styles.buttonText, { color: primary ? colors.primaryContrast : colors.text }]}
+        >
+          {title}
+        </Text>
       )}
     </Pressable>
   );
 }
 
-export function Banner({ tone, children }: { tone: 'danger' | 'warning' | 'success'; children: ReactNode }) {
+export function Banner({
+  tone,
+  children,
+}: {
+  tone: 'danger' | 'warning' | 'success';
+  children: ReactNode;
+}) {
   const color = colors[tone];
   return (
     <View accessibilityRole="alert" style={[styles.banner, { borderColor: color }]}>
@@ -86,7 +115,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   error: { color: colors.danger, fontSize: 13 },
-  button: { minHeight: 48, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing(5) },
+  button: {
+    minHeight: 48,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing(5),
+  },
   buttonText: { fontSize: 16, fontWeight: '700' },
-  banner: { borderWidth: 1, borderRadius: radius.md, padding: spacing(3), backgroundColor: colors.surface },
+  banner: {
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing(3),
+    backgroundColor: colors.surface,
+  },
 });

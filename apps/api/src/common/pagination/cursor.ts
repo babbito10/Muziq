@@ -9,7 +9,9 @@ export function encodeCursor(id: string): string {
 export function decodeCursor(cursor: string | undefined): string | undefined {
   if (!cursor) return undefined;
   try {
-    const parsed = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as { id?: unknown };
+    const parsed = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')) as {
+      id?: unknown;
+    };
     if (typeof parsed.id === 'string' && /^[0-9a-f-]{36}$/i.test(parsed.id)) return parsed.id;
   } catch {
     // fall through

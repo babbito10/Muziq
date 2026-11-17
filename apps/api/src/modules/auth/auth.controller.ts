@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type {
@@ -52,7 +64,8 @@ export class AuthController {
 
   /** Deliver the refresh token: HttpOnly cookie for browsers, response body for mobile. */
   private deliver(issued: IssuedSession, res: Response): AuthSuccessResponse {
-    if (issued.clientType === 'mobile') return { ...issued.response, refreshToken: issued.refreshToken };
+    if (issued.clientType === 'mobile')
+      return { ...issued.response, refreshToken: issued.refreshToken };
     setRefreshCookie(res, this.config, issued.clientType, issued.refreshToken);
     return issued.response;
   }
@@ -138,7 +151,8 @@ export class AuthController {
   ): Promise<AuthTokens> {
     const clientType: ClientType = body.clientType;
     const token = clientType === 'mobile' ? body.refreshToken : readRefreshCookie(req, clientType);
-    if (!token) throw AppError.unauthorized('INVALID_TOKEN', 'You are signed out. Please sign in again.');
+    if (!token)
+      throw AppError.unauthorized('INVALID_TOKEN', 'You are signed out. Please sign in again.');
     try {
       const result = await this.auth.refresh(token, clientType, requestMeta(req));
       if (clientType === 'mobile') return result;
@@ -162,7 +176,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
     const meta = requestMeta(req);
-    const tokens = [body.refreshToken, readRefreshCookie(req, 'web'), readRefreshCookie(req, 'admin')];
+    const tokens = [
+      body.refreshToken,
+      readRefreshCookie(req, 'web'),
+      readRefreshCookie(req, 'admin'),
+    ];
     // Only clear the cookie(s) actually presented, so signing out of one app keeps the other.
     for (const clientType of ['web', 'admin'] as const) {
       if (readRefreshCookie(req, clientType)) clearRefreshCookie(res, this.config, clientType);

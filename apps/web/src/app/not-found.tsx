@@ -8,7 +8,9 @@ export default function NotFound() {
       <Logo />
       <h1 className="font-display text-3xl font-bold">This track skipped</h1>
       <p className="text-fg-muted">We couldn&apos;t find the page you were looking for.</p>
-      <Link href="/" className={buttonClasses('primary')}>Back to home</Link>
+      <Link href="/" className={buttonClasses('primary')}>
+        Back to home
+      </Link>
     </main>
   );
 }

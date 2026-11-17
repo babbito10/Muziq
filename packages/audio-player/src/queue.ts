@@ -90,7 +90,8 @@ function pushHistory(state: QueueState): string[] {
 export function queueReducer(state: QueueState, action: QueueAction): QueueState {
   switch (action.type) {
     case 'load': {
-      if (action.items.length === 0) return { ...createQueueState(), repeat: state.repeat, shuffle: state.shuffle };
+      if (action.items.length === 0)
+        return { ...createQueueState(), repeat: state.repeat, shuffle: state.shuffle };
       const start = Math.min(Math.max(action.startIndex ?? 0, 0), action.items.length - 1);
       const order = state.shuffle
         ? shuffledOrder(action.items.length, action.random ?? Math.random, start)
@@ -193,7 +194,12 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
     }
 
     case 'clear':
-      return { ...createQueueState(), repeat: state.repeat, shuffle: state.shuffle, history: state.history };
+      return {
+        ...createQueueState(),
+        repeat: state.repeat,
+        shuffle: state.shuffle,
+        history: state.history,
+      };
 
     default: {
       const exhaustive: never = action;

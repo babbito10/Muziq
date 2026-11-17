@@ -26,7 +26,10 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
   const previous = { ...process.env };
   Object.assign(process.env, env);
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-  const app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false, logger: false });
+  const app = moduleRef.createNestApplication<NestExpressApplication>({
+    bodyParser: false,
+    logger: false,
+  });
   configureApp(app, loadConfig());
   await app.init();
   process.env = previous;
@@ -56,7 +59,10 @@ export function uniqueEmail(prefix = 'user'): string {
 }
 
 /** Extract `name=value` from Set-Cookie headers. */
-export function cookieValue(setCookie: string[] | string | undefined, name: string): string | undefined {
+export function cookieValue(
+  setCookie: string[] | string | undefined,
+  name: string,
+): string | undefined {
   const list = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
   const line = list.find((c) => c.startsWith(`${name}=`));
   if (!line) return undefined;
@@ -102,7 +108,11 @@ export function login(
   return ctx.http.post(`${API}/auth/login`).send({ email, password, clientType });
 }
 
-export async function grantRoles(ctx: TestContext, userId: string, roles: RoleKey[]): Promise<void> {
+export async function grantRoles(
+  ctx: TestContext,
+  userId: string,
+  roles: RoleKey[],
+): Promise<void> {
   const rows = await ctx.prisma.role.findMany({ where: { key: { in: roles } } });
   await ctx.prisma.userRole.createMany({
     data: rows.map((r) => ({ userId, roleId: r.id })),

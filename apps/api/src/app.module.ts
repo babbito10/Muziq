@@ -43,7 +43,8 @@ function prettyTransport(env: AppConfig['env']) {
           level: config.logLevel,
           genReqId: (req: IncomingMessage, res: ServerResponse) => {
             const incoming = req.headers['x-request-id'];
-            const id = typeof incoming === 'string' && REQUEST_ID.test(incoming) ? incoming : randomUUID();
+            const id =
+              typeof incoming === 'string' && REQUEST_ID.test(incoming) ? incoming : randomUUID();
             res.setHeader('x-request-id', id);
             return id;
           },
@@ -51,8 +52,12 @@ function prettyTransport(env: AppConfig['env']) {
             paths: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'],
             censor: '[redacted]',
           },
-          autoLogging: { ignore: (req: IncomingMessage) => (req.url ?? '').startsWith('/api/v1/health') },
-          customProps: (req: IncomingMessage) => ({ userId: (req as { auth?: { userId: string } }).auth?.userId }),
+          autoLogging: {
+            ignore: (req: IncomingMessage) => (req.url ?? '').startsWith('/api/v1/health'),
+          },
+          customProps: (req: IncomingMessage) => ({
+            userId: (req as { auth?: { userId: string } }).auth?.userId,
+          }),
           transport: prettyTransport(config.env),
         },
       }),

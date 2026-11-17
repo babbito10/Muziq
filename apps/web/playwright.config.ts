@@ -11,7 +11,8 @@ import { defineConfig, devices } from '@playwright/test';
 const API_PORT = Number(process.env.E2E_API_PORT ?? 4100);
 const WEB_PORT = Number(process.env.E2E_WEB_PORT ?? 3100);
 const DATABASE_URL =
-  process.env.E2E_DATABASE_URL ?? 'postgresql://musicverse:musicverse@localhost:5432/musicverse_e2e?schema=public';
+  process.env.E2E_DATABASE_URL ??
+  'postgresql://musicverse:musicverse@localhost:5432/musicverse_e2e?schema=public';
 
 export const MAILPIT_URL = process.env.MAILPIT_URL ?? 'http://localhost:8025';
 
@@ -29,7 +30,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /responsive\.spec\.ts/ },
+    {
+      name: 'desktop-chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /responsive\.spec\.ts/,
+    },
     { name: 'mobile-chromium', use: { ...devices['Pixel 7'] }, testMatch: /responsive\.spec\.ts/ },
   ],
   webServer: [

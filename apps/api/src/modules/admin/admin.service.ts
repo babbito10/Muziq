@@ -71,7 +71,11 @@ export class AdminService {
           }
         : {}),
     };
-    const rows = await this.prisma.user.findMany({ where, include: summaryInclude, ...pageArgs(query.limit, query.cursor) });
+    const rows = await this.prisma.user.findMany({
+      where,
+      include: summaryInclude,
+      ...pageArgs(query.limit, query.cursor),
+    });
     return toPage(rows, query.limit, toSummary);
   }
 
@@ -82,7 +86,9 @@ export class AdminService {
         ...summaryInclude,
         oauthAccounts: { select: { provider: true } },
         mfaFactors: { where: { confirmedAt: { not: null } }, select: { id: true } },
-        _count: { select: { sessions: { where: { revokedAt: null, expiresAt: { gt: new Date() } } } } },
+        _count: {
+          select: { sessions: { where: { revokedAt: null, expiresAt: { gt: new Date() } } } },
+        },
       },
     });
     if (!user) throw AppError.notFound('User not found.');
@@ -101,8 +107,14 @@ export class AdminService {
     action: 'grant' | 'revoke',
     meta: RequestMeta,
   ): Promise<AdminUserDetail> {
-    const decision = canManageRole({ actorRoles: actor.roles, role, action, isSelf: actor.userId === targetId });
-    if (!decision.allowed) throw AppError.forbidden(DENIAL_MESSAGES[decision.reason], 'ROLE_NOT_ASSIGNABLE');
+    const decision = canManageRole({
+      actorRoles: actor.roles,
+      role,
+      action,
+      isSelf: actor.userId === targetId,
+    });
+    if (!decision.allowed)
+      throw AppError.forbidden(DENIAL_MESSAGES[decision.reason], 'ROLE_NOT_ASSIGNABLE');
 
     const target = await this.prisma.user.findUnique({ where: { id: targetId } });
     if (!target || target.status === 'deleted') throw AppError.notFound('User not found.');
@@ -110,7 +122,9 @@ export class AdminService {
 
     await this.prisma.$transaction(async (tx) => {
       if (action === 'grant') {
-        const existing = await tx.userRole.findUnique({ where: { userId_roleId: { userId: targetId, roleId } } });
+        const existing = await tx.userRole.findUnique({
+          where: { userId_roleId: { userId: targetId, roleId } },
+        });
         if (existing) return;
         await tx.userRole.create({ data: { userId: targetId, roleId, grantedById: actor.userId } });
       } else {
@@ -133,19 +147,38 @@ export class AdminService {
     return this.getUser(targetId);
   }
 
-  async suspend(actor: AuthContext, targetId: string, reason: string, meta: RequestMeta): Promise<AdminUserDetail> {
+  async suspend(
+    actor: AuthContext,
+    targetId: string,
+    reason: string,
+    meta: RequestMeta,
+  ): Promise<AdminUserDetail> {
     if (actor.userId === targetId) throw AppError.forbidden('You cannot suspend your own account.');
-    const target = await this.prisma.user.findUnique({ where: { id: targetId }, include: summaryInclude });
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetId },
+      include: summaryInclude,
+    });
     if (!target || target.status === 'deleted') throw AppError.notFound('User not found.');
     const targetRoles = target.roles.map((r) => r.role.key);
     if (targetRoles.includes('super_admin') && !actor.roles.includes('super_admin')) {
-      throw AppError.forbidden('Only a super administrator can suspend another super administrator.');
+      throw AppError.forbidden(
+        'Only a super administrator can suspend another super administrator.',
+      );
     }
     if (target.status !== 'suspended') {
       await this.prisma.$transaction(async (tx) => {
-        await tx.user.update({ where: { id: targetId }, data: { status: 'suspended', suspendedReason: reason } });
+        await tx.user.update({
+          where: { id: targetId },
+          data: { status: 'suspended', suspendedReason: reason },
+        });
         await this.audit.record(
-          { action: 'admin.user.suspended', actorId: actor.userId, targetType: 'user', targetId, metadata: { reason } },
+          {
+            action: 'admin.user.suspended',
+            actorId: actor.userId,
+            targetType: 'user',
+            targetId,
+            metadata: { reason },
+          },
           meta,
           tx,
         );
@@ -156,13 +189,24 @@ export class AdminService {
     return this.getUser(targetId);
   }
 
-  async reinstate(actor: AuthContext, targetId: string, meta: RequestMeta): Promise<AdminUserDetail> {
+  async reinstate(
+    actor: AuthContext,
+    targetId: string,
+    meta: RequestMeta,
+  ): Promise<AdminUserDetail> {
     const target = await this.prisma.user.findUnique({ where: { id: targetId } });
     if (!target) throw AppError.notFound('User not found.');
     if (target.status === 'suspended') {
       await this.prisma.$transaction(async (tx) => {
-        await tx.user.update({ where: { id: targetId }, data: { status: 'active', suspendedReason: null } });
-        await this.audit.record({ action: 'admin.user.reinstated', actorId: actor.userId, targetType: 'user', targetId }, meta, tx);
+        await tx.user.update({
+          where: { id: targetId },
+          data: { status: 'active', suspendedReason: null },
+        });
+        await this.audit.record(
+          { action: 'admin.user.reinstated', actorId: actor.userId, targetType: 'user', targetId },
+          meta,
+          tx,
+        );
       });
       await this.authz.invalidateUser(targetId);
     }

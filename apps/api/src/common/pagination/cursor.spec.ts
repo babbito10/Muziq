@@ -11,7 +11,9 @@ describe('cursor pagination', () => {
 
   it('rejects tampered cursors', () => {
     expect(() => decodeCursor('garbage')).toThrow(AppError);
-    expect(() => decodeCursor(Buffer.from('{"id":"1; drop"}').toString('base64url'))).toThrow(AppError);
+    expect(() => decodeCursor(Buffer.from('{"id":"1; drop"}').toString('base64url'))).toThrow(
+      AppError,
+    );
   });
 
   it('builds prisma args', () => {

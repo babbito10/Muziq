@@ -1,6 +1,15 @@
 import { totp } from '../src/modules/auth/services/totp';
 import { MAX_CHALLENGE_ATTEMPTS } from '../src/modules/auth/services/mfa.service';
-import { API, bearer, createTestApp, login, PASSWORD, registerUser, resetData, type TestContext } from './helpers';
+import {
+  API,
+  bearer,
+  createTestApp,
+  login,
+  PASSWORD,
+  registerUser,
+  resetData,
+  type TestContext,
+} from './helpers';
 
 describe('Multi-factor authentication (TOTP)', () => {
   let ctx: TestContext;
@@ -12,7 +21,10 @@ describe('Multi-factor authentication (TOTP)', () => {
 
   async function enrol() {
     const user = await registerUser(ctx);
-    const setup = await ctx.http.post(`${API}/auth/mfa/totp/setup`).set(bearer(user.accessToken)).expect(200);
+    const setup = await ctx.http
+      .post(`${API}/auth/mfa/totp/setup`)
+      .set(bearer(user.accessToken))
+      .expect(200);
     expect(setup.body.otpauthUrl).toMatch(/^otpauth:\/\/totp\/MusicVerse/);
     const secret: string = setup.body.secret;
     await ctx.http
@@ -36,7 +48,10 @@ describe('Multi-factor authentication (TOTP)', () => {
   it('rejects a wrong confirmation code', async () => {
     const { accessToken } = await registerUser(ctx);
     await ctx.http.post(`${API}/auth/mfa/totp/setup`).set(bearer(accessToken)).expect(200);
-    const res = await ctx.http.post(`${API}/auth/mfa/totp/confirm`).set(bearer(accessToken)).send({ code: '000000' });
+    const res = await ctx.http
+      .post(`${API}/auth/mfa/totp/confirm`)
+      .set(bearer(accessToken))
+      .send({ code: '000000' });
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_MFA_CODE');
   });
@@ -67,9 +82,15 @@ describe('Multi-factor authentication (TOTP)', () => {
     const { email } = await enrol();
     const { body } = await login(ctx, email).expect(200);
     for (let i = 0; i < MAX_CHALLENGE_ATTEMPTS; i++) {
-      await ctx.http.post(`${API}/auth/mfa/verify`).send({ mfaToken: body.mfaToken, code: '000000' }).expect(401);
+      await ctx.http
+        .post(`${API}/auth/mfa/verify`)
+        .send({ mfaToken: body.mfaToken, code: '000000' })
+        .expect(401);
     }
-    const res = await ctx.http.post(`${API}/auth/mfa/verify`).send({ mfaToken: body.mfaToken, code: '000000' }).expect(401);
+    const res = await ctx.http
+      .post(`${API}/auth/mfa/verify`)
+      .send({ mfaToken: body.mfaToken, code: '000000' })
+      .expect(401);
     expect(res.body.error.code).toBe('INVALID_TOKEN');
   });
 
@@ -78,7 +99,11 @@ describe('Multi-factor authentication (TOTP)', () => {
     const { body } = await login(ctx, email, PASSWORD, 'web').expect(200);
     await ctx.http
       .post(`${API}/auth/mfa/verify`)
-      .send({ mfaToken: body.mfaToken, code: totp(secret, Date.now() + 30_000), clientType: 'mobile' })
+      .send({
+        mfaToken: body.mfaToken,
+        code: totp(secret, Date.now() + 30_000),
+        clientType: 'mobile',
+      })
       .expect(401);
   });
 
@@ -97,6 +122,10 @@ describe('Multi-factor authentication (TOTP)', () => {
       .expect(200, { enabled: false });
     const res = await login(ctx, email).expect(200);
     expect(res.body.mfaRequired).toBe(false);
-    expect(await ctx.prisma.auditLog.count({ where: { action: { in: ['auth.mfa.enabled', 'auth.mfa.disabled'] } } })).toBe(2);
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: { action: { in: ['auth.mfa.enabled', 'auth.mfa.disabled'] } },
+      }),
+    ).toBe(2);
   });
 });

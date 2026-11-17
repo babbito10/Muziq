@@ -10,20 +10,20 @@
 
 :root {
   color-scheme: dark;
-  --mv-bg: #0a0f1e;            /* deep navy */
+  --mv-bg: #0a0f1e; /* deep navy */
   --mv-bg-elevated: #0f1629;
-  --mv-surface: #151b2e;       /* charcoal navy */
+  --mv-surface: #151b2e; /* charcoal navy */
   --mv-surface-raised: #1c2339;
   --mv-surface-hover: #242c45;
   --mv-border: #2a3350;
   --mv-border-strong: #3a4566;
   --mv-text: #eef1f8;
-  --mv-text-muted: #a3acc4;    /* ≥ 7:1 on bg */
-  --mv-text-subtle: #8690ab;   /* ≥ 4.5:1 on bg */
-  --mv-primary: #2dd4bf;       /* teal */
+  --mv-text-muted: #a3acc4; /* ≥ 7:1 on bg */
+  --mv-text-subtle: #8690ab; /* ≥ 4.5:1 on bg */
+  --mv-primary: #2dd4bf; /* teal */
   --mv-primary-hover: #5eead4;
   --mv-primary-contrast: #042f2e;
-  --mv-accent: #a78bfa;        /* violet */
+  --mv-accent: #a78bfa; /* violet */
   --mv-accent-hover: #c4b5fd;
   --mv-accent-contrast: #1e1045;
   --mv-danger: #f87171;

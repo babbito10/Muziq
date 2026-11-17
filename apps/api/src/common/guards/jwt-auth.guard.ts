@@ -16,7 +16,10 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
@@ -26,7 +29,11 @@ export class JwtAuthGuard implements CanActivate {
 
     const claims = await this.tokens.verifyAccessToken(match[1]!);
     const auth = await this.authz.resolve(claims.userId, claims.sessionId);
-    if (!auth) throw AppError.unauthorized('UNAUTHENTICATED', 'Your session has ended. Please sign in again.');
+    if (!auth)
+      throw AppError.unauthorized(
+        'UNAUTHENTICATED',
+        'Your session has ended. Please sign in again.',
+      );
     request.auth = auth;
     return true;
   }

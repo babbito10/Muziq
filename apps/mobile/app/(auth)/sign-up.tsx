@@ -18,12 +18,20 @@ export default function SignUp() {
 
   async function submit() {
     setFormError(null);
-    const checked = validate(registerSchema, { ...values, acceptTerms: accepted, clientType: 'mobile' });
+    const checked = validate(registerSchema, {
+      ...values,
+      acceptTerms: accepted,
+      clientType: 'mobile',
+    });
     if (!checked.ok) return setErrors(checked.errors);
     setErrors({});
     setBusy(true);
     try {
-      await register({ email: checked.data.email, password: checked.data.password, displayName: checked.data.displayName });
+      await register({
+        email: checked.data.email,
+        password: checked.data.password,
+        displayName: checked.data.displayName,
+      });
     } catch (error) {
       setFormError(errorMessage(error));
     } finally {
@@ -33,28 +41,72 @@ export default function SignUp() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: spacing(6), gap: spacing(4) }} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ padding: spacing(6), gap: spacing(4) }}
+          keyboardShouldPersistTaps="handled"
+        >
           <Heading>Create your account</Heading>
-          <Body muted>Listen free. Add artist, producer or DJ tools whenever you&apos;re ready.</Body>
+          <Body muted>
+            Listen free. Add artist, producer or DJ tools whenever you&apos;re ready.
+          </Body>
           {formError ? <Banner tone="danger">{formError}</Banner> : null}
-          <Field label="Display name" value={values.displayName} onChangeText={(t) => setValues((v) => ({ ...v, displayName: t }))} error={errors.displayName} />
-          <Field label="Email" value={values.email} onChangeText={(t) => setValues((v) => ({ ...v, email: t }))} autoCapitalize="none" keyboardType="email-address" autoComplete="email" error={errors.email} />
-          <Field label="Password" value={values.password} onChangeText={(t) => setValues((v) => ({ ...v, password: t }))} secureTextEntry autoComplete="new-password" textContentType="newPassword" error={errors.password} />
+          <Field
+            label="Display name"
+            value={values.displayName}
+            onChangeText={(t) => setValues((v) => ({ ...v, displayName: t }))}
+            error={errors.displayName}
+          />
+          <Field
+            label="Email"
+            value={values.email}
+            onChangeText={(t) => setValues((v) => ({ ...v, email: t }))}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            error={errors.email}
+          />
+          <Field
+            label="Password"
+            value={values.password}
+            onChangeText={(t) => setValues((v) => ({ ...v, password: t }))}
+            secureTextEntry
+            autoComplete="new-password"
+            textContentType="newPassword"
+            error={errors.password}
+          />
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{ checked: accepted }}
             onPress={() => setAccepted((a) => !a)}
             style={{ flexDirection: 'row', gap: spacing(3), alignItems: 'flex-start' }}
           >
-            <View style={{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.primary, backgroundColor: accepted ? colors.primary : 'transparent' }} />
+            <View
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                borderWidth: 2,
+                borderColor: colors.primary,
+                backgroundColor: accepted ? colors.primary : 'transparent',
+              }}
+            />
             <Text style={{ color: colors.textMuted, flex: 1 }}>
-              I agree to the Terms and Privacy Policy, and I will only upload music I own or am licensed to use.
+              I agree to the Terms and Privacy Policy, and I will only upload music I own or am
+              licensed to use.
             </Text>
           </Pressable>
-          {errors.acceptTerms ? <Text style={{ color: colors.danger }}>{errors.acceptTerms}</Text> : null}
+          {errors.acceptTerms ? (
+            <Text style={{ color: colors.danger }}>{errors.acceptTerms}</Text>
+          ) : null}
           <PrimaryButton title="Create account" loading={busy} onPress={submit} />
-          <Link href="/(auth)/sign-in" style={{ color: colors.primary, textAlign: 'center', padding: spacing(2) }}>
+          <Link
+            href="/(auth)/sign-in"
+            style={{ color: colors.primary, textAlign: 'center', padding: spacing(2) }}
+          >
             <Text>Already have an account? Sign in</Text>
           </Link>
         </ScrollView>

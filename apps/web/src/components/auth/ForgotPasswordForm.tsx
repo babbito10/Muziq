@@ -17,12 +17,17 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <Alert tone="success" title="Check your inbox">
-        If an account exists for {email}, we have sent a link to reset your password. It expires in 30 minutes.
+        If an account exists for {email}, we have sent a link to reset your password. It expires in
+        30 minutes.
       </Alert>
     );
   }
   return (
-    <form noValidate onSubmit={(e) => form.handleSubmit(e, { email })} className="flex flex-col gap-4">
+    <form
+      noValidate
+      onSubmit={(e) => form.handleSubmit(e, { email })}
+      className="flex flex-col gap-4"
+    >
       {form.formError && <Alert tone="danger">{form.formError}</Alert>}
       <TextField
         label="Email"

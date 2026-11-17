@@ -62,7 +62,10 @@ export class JwksIdTokenVerifier implements IdTokenVerifier {
         clockTolerance: 30,
       }));
     } catch {
-      throw AppError.unauthorized('PROVIDER_TOKEN_INVALID', 'We could not verify your sign-in. Please try again.');
+      throw AppError.unauthorized(
+        'PROVIDER_TOKEN_INVALID',
+        'We could not verify your sign-in. Please try again.',
+      );
     }
 
     if (this.options.nonceRequired || rawNonce || payload.nonce !== undefined) {
@@ -73,11 +76,17 @@ export class JwksIdTokenVerifier implements IdTokenVerifier {
             ? createHash('sha256').update(rawNonce).digest('hex')
             : rawNonce;
       if (!expected || payload.nonce !== expected) {
-        throw AppError.unauthorized('PROVIDER_TOKEN_INVALID', 'Sign-in nonce mismatch. Please try again.');
+        throw AppError.unauthorized(
+          'PROVIDER_TOKEN_INVALID',
+          'Sign-in nonce mismatch. Please try again.',
+        );
       }
     }
     if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
-      throw AppError.unauthorized('PROVIDER_TOKEN_INVALID', 'The sign-in token is missing a subject.');
+      throw AppError.unauthorized(
+        'PROVIDER_TOKEN_INVALID',
+        'The sign-in token is missing a subject.',
+      );
     }
 
     const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : null;

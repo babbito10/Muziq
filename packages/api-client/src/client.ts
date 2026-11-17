@@ -313,7 +313,8 @@ export class ApiClient {
   readonly admin = {
     listUsers: (query: Partial<AdminListUsersQuery> = {}) =>
       this.request<Paginated<AdminUserSummary>>('/admin/users', { query }),
-    getUser: (id: string) => this.request<AdminUserDetail>(`/admin/users/${encodeURIComponent(id)}`),
+    getUser: (id: string) =>
+      this.request<AdminUserDetail>(`/admin/users/${encodeURIComponent(id)}`),
     grantRole: (id: string, input: AdminGrantRoleInput) =>
       this.request<AdminUserDetail>(`/admin/users/${encodeURIComponent(id)}/roles`, {
         method: 'POST',

@@ -6,7 +6,11 @@ async function run() {
   const prisma = new PrismaClient();
   try {
     await syncRolesAndPermissions(prisma);
-    const admin = await ensureSuperAdmin(prisma, process.env.SEED_ADMIN_EMAIL, process.env.SEED_ADMIN_PASSWORD);
+    const admin = await ensureSuperAdmin(
+      prisma,
+      process.env.SEED_ADMIN_EMAIL,
+      process.env.SEED_ADMIN_PASSWORD,
+    );
     console.info(`Seed complete (roles synchronised, super administrator: ${admin}).`);
   } finally {
     await prisma.$disconnect();

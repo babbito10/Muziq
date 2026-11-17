@@ -51,23 +51,56 @@ describe('isStaff', () => {
 
 describe('canManageRole', () => {
   it('lets admins grant capability and moderator roles', () => {
-    expect(canManageRole({ actorRoles: ['admin'], role: 'artist', action: 'grant', isSelf: false })).toEqual({ allowed: true });
-    expect(canManageRole({ actorRoles: ['admin'], role: 'moderator', action: 'grant', isSelf: false })).toEqual({ allowed: true });
+    expect(
+      canManageRole({ actorRoles: ['admin'], role: 'artist', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: true });
+    expect(
+      canManageRole({ actorRoles: ['admin'], role: 'moderator', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: true });
   });
 
   it('reserves admin and super_admin grants for super admins', () => {
-    expect(canManageRole({ actorRoles: ['admin'], role: 'admin', action: 'grant', isSelf: false })).toEqual({ allowed: false, reason: 'insufficient_privilege' });
-    expect(canManageRole({ actorRoles: ['admin'], role: 'super_admin', action: 'grant', isSelf: false })).toEqual({ allowed: false, reason: 'insufficient_privilege' });
-    expect(canManageRole({ actorRoles: ['super_admin'], role: 'admin', action: 'grant', isSelf: false })).toEqual({ allowed: true });
+    expect(
+      canManageRole({ actorRoles: ['admin'], role: 'admin', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: false, reason: 'insufficient_privilege' });
+    expect(
+      canManageRole({ actorRoles: ['admin'], role: 'super_admin', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: false, reason: 'insufficient_privilege' });
+    expect(
+      canManageRole({ actorRoles: ['super_admin'], role: 'admin', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: true });
   });
 
   it('blocks non-admins', () => {
-    expect(canManageRole({ actorRoles: ['moderator'], role: 'artist', action: 'grant', isSelf: false })).toEqual({ allowed: false, reason: 'insufficient_privilege' });
+    expect(
+      canManageRole({ actorRoles: ['moderator'], role: 'artist', action: 'grant', isSelf: false }),
+    ).toEqual({ allowed: false, reason: 'insufficient_privilege' });
   });
 
   it('prevents self lock-out and listener changes', () => {
-    expect(canManageRole({ actorRoles: ['super_admin'], role: 'super_admin', action: 'revoke', isSelf: true })).toEqual({ allowed: false, reason: 'self_lockout' });
-    expect(canManageRole({ actorRoles: ['super_admin'], role: 'listener', action: 'revoke', isSelf: false })).toEqual({ allowed: false, reason: 'not_grantable' });
-    expect(canManageRole({ actorRoles: ['super_admin'], role: 'wizard', action: 'grant', isSelf: false })).toEqual({ allowed: false, reason: 'unknown_role' });
+    expect(
+      canManageRole({
+        actorRoles: ['super_admin'],
+        role: 'super_admin',
+        action: 'revoke',
+        isSelf: true,
+      }),
+    ).toEqual({ allowed: false, reason: 'self_lockout' });
+    expect(
+      canManageRole({
+        actorRoles: ['super_admin'],
+        role: 'listener',
+        action: 'revoke',
+        isSelf: false,
+      }),
+    ).toEqual({ allowed: false, reason: 'not_grantable' });
+    expect(
+      canManageRole({
+        actorRoles: ['super_admin'],
+        role: 'wizard',
+        action: 'grant',
+        isSelf: false,
+      }),
+    ).toEqual({ allowed: false, reason: 'unknown_role' });
   });
 });

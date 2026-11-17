@@ -2,7 +2,13 @@ import { useId } from 'react';
 import { cn } from '../cn';
 
 /** MusicVerse wordmark with a sound-wave glyph. */
-export function Logo({ className, withWordmark = true }: { className?: string; withWordmark?: boolean }) {
+export function Logo({
+  className,
+  withWordmark = true,
+}: {
+  className?: string;
+  withWordmark?: boolean;
+}) {
   // Unique per instance: a gradient defined inside a hidden (display:none) copy would not paint.
   const gradientId = `mv-logo-${useId().replace(/:/g, '')}`;
   return (

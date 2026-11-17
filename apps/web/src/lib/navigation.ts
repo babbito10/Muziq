@@ -11,7 +11,8 @@ export interface NavItem {
   available: boolean;
 }
 
-export type IconName = 'home' | 'discover' | 'search' | 'library' | 'create' | 'community' | 'artist' | 'market';
+export type IconName =
+  'home' | 'discover' | 'search' | 'library' | 'create' | 'community' | 'artist' | 'market';
 
 export const PRIMARY_NAV: NavItem[] = [
   { label: 'Home', href: '/', icon: 'home', phase: 1, available: true },

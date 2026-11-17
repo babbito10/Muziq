@@ -26,7 +26,13 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): IN
     origin: config.corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    allowedHeaders: ['content-type', 'authorization', 'x-request-id', 'idempotency-key', CSRF_HEADER],
+    allowedHeaders: [
+      'content-type',
+      'authorization',
+      'x-request-id',
+      'idempotency-key',
+      CSRF_HEADER,
+    ],
     exposedHeaders: ['x-request-id', 'retry-after'],
     maxAge: 600,
   });
@@ -38,7 +44,9 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): IN
   // Errors raised by Express middleware (e.g. malformed JSON) bypass Nest filters; format them too.
   app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) return next(err);
-    filter.catch(err, { switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }) } as never);
+    filter.catch(err, {
+      switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }),
+    } as never);
   });
   app.enableShutdownHooks();
 
@@ -47,7 +55,9 @@ export function configureApp(app: NestExpressApplication, config: AppConfig): IN
       app,
       new DocumentBuilder()
         .setTitle('MusicVerse API')
-        .setDescription('MusicVerse REST API v1. Errors use the envelope `{ error: { code, message, details, requestId } }`.')
+        .setDescription(
+          'MusicVerse REST API v1. Errors use the envelope `{ error: { code, message, details, requestId } }`.',
+        )
         .setVersion('1.0')
         .addBearerAuth()
         .build(),

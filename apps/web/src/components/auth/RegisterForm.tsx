@@ -8,7 +8,12 @@ import { useZodForm } from '@/lib/use-zod-form';
 
 export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const { register } = useAuth();
-  const [values, setValues] = useState({ displayName: '', email: '', password: '', acceptTerms: false });
+  const [values, setValues] = useState({
+    displayName: '',
+    email: '',
+    password: '',
+    acceptTerms: false,
+  });
   const form = useZodForm(registerSchema, async (parsed) => {
     await register({
       email: parsed.email,
@@ -58,8 +63,8 @@ export function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       <Checkbox
         label={
           <>
-            I agree to the MusicVerse Terms of Service and Privacy Policy, and I will only upload music I own or am
-            licensed to use.
+            I agree to the MusicVerse Terms of Service and Privacy Policy, and I will only upload
+            music I own or am licensed to use.
           </>
         }
         checked={values.acceptTerms}

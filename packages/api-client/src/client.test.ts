@@ -60,7 +60,9 @@ describe('ApiClient', () => {
       if (url.endsWith('/auth/refresh')) return json(200, { accessToken: 'A2', expiresIn: 900 });
       meCalls += 1;
       return meCalls === 1
-        ? json(401, { error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null } })
+        ? json(401, {
+            error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null },
+          })
         : json(200, user);
     });
     await tokenStore.setTokens({ accessToken: 'A1', expiresIn: 900 });
@@ -81,7 +83,9 @@ describe('ApiClient', () => {
       const auth = (init.headers as Record<string, string>).authorization;
       return auth === 'Bearer A2'
         ? json(200, user)
-        : json(401, { error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null } });
+        : json(401, {
+            error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null },
+          });
     });
     await tokenStore.setTokens({ accessToken: 'A1', expiresIn: 900 });
     await Promise.all([client.users.me(), client.users.me(), client.auth.sessions()]);
@@ -91,12 +95,18 @@ describe('ApiClient', () => {
   it('sends the refresh token in the body for mobile and signals expiry when refresh fails', async () => {
     const { client, calls, tokenStore, onSessionExpired } = setup((url) => {
       if (url.endsWith('/auth/refresh'))
-        return json(401, { error: { code: 'INVALID_TOKEN', message: 'x', details: null, requestId: null } });
-      return json(401, { error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null } });
+        return json(401, {
+          error: { code: 'INVALID_TOKEN', message: 'x', details: null, requestId: null },
+        });
+      return json(401, {
+        error: { code: 'UNAUTHENTICATED', message: 'x', details: null, requestId: null },
+      });
     }, 'body');
     await tokenStore.setTokens({ accessToken: 'A1', refreshToken: 'R'.repeat(43), expiresIn: 900 });
     await expect(client.users.me()).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
-    const refreshBody = JSON.parse(calls.find((c) => c.url.endsWith('/auth/refresh'))!.init.body as string);
+    const refreshBody = JSON.parse(
+      calls.find((c) => c.url.endsWith('/auth/refresh'))!.init.body as string,
+    );
     expect(refreshBody).toEqual({ clientType: 'mobile', refreshToken: 'R'.repeat(43) });
     expect(onSessionExpired).toHaveBeenCalled();
     expect(tokenStore.getAccessToken()).toBeNull();
@@ -121,11 +131,16 @@ describe('ApiClient', () => {
     const offline = setup(() => {
       throw new TypeError('fetch failed');
     });
-    await expect(offline.client.health.ready()).rejects.toMatchObject({ code: 'NETWORK_ERROR', status: 0 });
+    await expect(offline.client.health.ready()).rejects.toMatchObject({
+      code: 'NETWORK_ERROR',
+      status: 0,
+    });
   });
 
   it('serialises query parameters and skips empty values', async () => {
-    const { client, calls } = setup(() => json(200, { data: [], page: { nextCursor: null, limit: 20 } }));
+    const { client, calls } = setup(() =>
+      json(200, { data: [], page: { nextCursor: null, limit: 20 } }),
+    );
     await client.admin.listUsers({ limit: 20, q: '', status: 'active' });
     expect(calls[0]!.url).toBe('http://api.test/api/v1/admin/users?limit=20&status=active');
   });

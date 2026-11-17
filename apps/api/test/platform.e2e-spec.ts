@@ -18,7 +18,12 @@ describe('Platform (health, errors, headers, docs)', () => {
   it('returns the error envelope for unknown routes', async () => {
     const res = await ctx.http.get(`${API}/does-not-exist`).expect(404);
     expect(res.body).toEqual({
-      error: { code: 'NOT_FOUND', message: 'Route not found.', details: null, requestId: expect.any(String) },
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Route not found.',
+        details: null,
+        requestId: expect.any(String),
+      },
     });
   });
 
@@ -72,9 +77,15 @@ describe('Platform (health, errors, headers, docs)', () => {
     expect(res.body.openapi).toMatch(/^3\./);
     const paths = Object.keys(res.body.paths);
     expect(paths).toEqual(
-      expect.arrayContaining(['/api/v1/auth/register', '/api/v1/auth/login', '/api/v1/users/me', '/api/v1/admin/users']),
+      expect.arrayContaining([
+        '/api/v1/auth/register',
+        '/api/v1/auth/login',
+        '/api/v1/users/me',
+        '/api/v1/admin/users',
+      ]),
     );
-    const registerBody = res.body.paths['/api/v1/auth/register'].post.requestBody.content['application/json'].schema;
+    const registerBody =
+      res.body.paths['/api/v1/auth/register'].post.requestBody.content['application/json'].schema;
     expect(registerBody.properties).toHaveProperty('email');
   });
 });

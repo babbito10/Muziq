@@ -91,7 +91,12 @@ export const ROLE_DEFINITIONS: Record<RoleKey, RoleDefinition> = {
     description: 'Review uploads, reports, takedowns and appeals.',
     isStaff: true,
     isSelfAssignable: false,
-    permissions: ['moderation:review', 'moderation:takedown', 'admin:users.read', 'admin:audit.read'],
+    permissions: [
+      'moderation:review',
+      'moderation:takedown',
+      'admin:users.read',
+      'admin:audit.read',
+    ],
   },
   admin: {
     key: 'admin',

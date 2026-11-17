@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   ROLE_KEYS,
@@ -36,7 +47,9 @@ export class AdminController {
   @RequirePermissions('admin:users.read')
   @ApiOperation({ summary: 'List users (cursor paginated, filter by status/role/search)' })
   @ApiZodQuery(adminListUsersQuerySchema)
-  listUsers(@Query(zodPipe(adminListUsersQuerySchema)) query: AdminListUsersQuery): Promise<Paginated<AdminUserSummary>> {
+  listUsers(
+    @Query(zodPipe(adminListUsersQuerySchema)) query: AdminListUsersQuery,
+  ): Promise<Paginated<AdminUserSummary>> {
     return this.admin.listUsers(query);
   }
 
@@ -103,7 +116,9 @@ export class AdminController {
   @RequirePermissions('admin:audit.read')
   @ApiOperation({ summary: 'Audit log (cursor paginated)' })
   @ApiZodQuery(auditLogQuerySchema)
-  auditLogs(@Query(zodPipe(auditLogQuerySchema)) query: AuditLogQuery): Promise<Paginated<AuditLogEntry>> {
+  auditLogs(
+    @Query(zodPipe(auditLogQuerySchema)) query: AuditLogQuery,
+  ): Promise<Paginated<AuditLogEntry>> {
     return this.admin.auditLogs(query);
   }
 }

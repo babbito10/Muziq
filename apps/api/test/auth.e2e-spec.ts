@@ -22,7 +22,10 @@ describe('Authentication', () => {
   afterAll(() => ctx.close());
 
   const refresh = (cookie: string, csrf = true) => {
-    const req = ctx.http.post(`${API}/auth/refresh`).set('cookie', `mv_refresh=${cookie}`).send({ clientType: 'web' });
+    const req = ctx.http
+      .post(`${API}/auth/refresh`)
+      .set('cookie', `mv_refresh=${cookie}`)
+      .send({ clientType: 'web' });
     return csrf ? req.set('x-csrf-protection', '1') : req;
   };
 
@@ -31,7 +34,12 @@ describe('Authentication', () => {
       const email = uniqueEmail('ada');
       const res = await ctx.http
         .post(`${API}/auth/register`)
-        .send({ email: email.toUpperCase(), password: PASSWORD, displayName: 'Ada', acceptTerms: true })
+        .send({
+          email: email.toUpperCase(),
+          password: PASSWORD,
+          displayName: 'Ada',
+          acceptTerms: true,
+        })
         .expect(201);
 
       expect(res.body).toMatchObject({ mfaRequired: false, expiresIn: 900 });
@@ -46,12 +54,16 @@ describe('Authentication', () => {
       expect(res.body.user.permissions).toContain('streaming:play');
       expect(res.body.user.permissions).not.toContain('catalogue:upload');
 
-      const cookie = (res.headers['set-cookie'] as unknown as string[]).find((c) => c.startsWith('mv_refresh='))!;
+      const cookie = (res.headers['set-cookie'] as unknown as string[]).find((c) =>
+        c.startsWith('mv_refresh='),
+      )!;
       expect(cookie).toMatch(/HttpOnly/);
       expect(cookie).toMatch(/SameSite=Strict/);
       expect(cookie).toMatch(/Path=\/api\/v1\/auth/);
 
-      expect(ctx.mail.latest(email, 'email_verification')?.text).toContain('http://localhost:3000/verify-email?token=');
+      expect(ctx.mail.latest(email, 'email_verification')?.text).toContain(
+        'http://localhost:3000/verify-email?token=',
+      );
 
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { email } });
       expect(user.passwordHash).toMatch(/^\$argon2id\$/);
@@ -64,7 +76,12 @@ describe('Authentication', () => {
       await registerUser(ctx, { email });
       const res = await ctx.http
         .post(`${API}/auth/register`)
-        .send({ email: email.toUpperCase(), password: PASSWORD, displayName: 'Dup', acceptTerms: true })
+        .send({
+          email: email.toUpperCase(),
+          password: PASSWORD,
+          displayName: 'Dup',
+          acceptTerms: true,
+        })
         .expect(409);
       expect(res.body.error.code).toBe('EMAIL_ALREADY_REGISTERED');
     });
@@ -72,17 +89,31 @@ describe('Authentication', () => {
     it('returns field-level validation issues', async () => {
       const res = await ctx.http
         .post(`${API}/auth/register`)
-        .send({ email: 'nope', password: 'short', displayName: '', acceptTerms: false, role: 'admin' })
+        .send({
+          email: 'nope',
+          password: 'short',
+          displayName: '',
+          acceptTerms: false,
+          role: 'admin',
+        })
         .expect(400);
       expect(res.body.error.code).toBe('VALIDATION_FAILED');
       const paths = res.body.error.details.map((d: { path: string }) => d.path);
-      expect(paths).toEqual(expect.arrayContaining(['email', 'password', 'displayName', 'acceptTerms']));
+      expect(paths).toEqual(
+        expect.arrayContaining(['email', 'password', 'displayName', 'acceptTerms']),
+      );
     });
 
     it('refuses to create admin-console accounts', async () => {
       await ctx.http
         .post(`${API}/auth/register`)
-        .send({ email: uniqueEmail(), password: PASSWORD, displayName: 'X', acceptTerms: true, clientType: 'admin' })
+        .send({
+          email: uniqueEmail(),
+          password: PASSWORD,
+          displayName: 'X',
+          acceptTerms: true,
+          clientType: 'admin',
+        })
         .expect(403);
     });
   });
@@ -108,8 +139,13 @@ describe('Authentication', () => {
       const wrong = await login(ctx, email, 'definitely wrong pw').expect(401);
       const unknown = await login(ctx, uniqueEmail('ghost')).expect(401);
       expect(wrong.body.error.code).toBe('INVALID_CREDENTIALS');
-      expect(unknown.body.error).toMatchObject({ code: wrong.body.error.code, message: wrong.body.error.message });
-      const failures = await ctx.prisma.auditLog.findMany({ where: { action: 'auth.login.failure' } });
+      expect(unknown.body.error).toMatchObject({
+        code: wrong.body.error.code,
+        message: wrong.body.error.message,
+      });
+      const failures = await ctx.prisma.auditLog.findMany({
+        where: { action: 'auth.login.failure' },
+      });
       expect(failures).toHaveLength(2);
       expect(failures.find((f) => f.actorId === id)?.metadata).toEqual({ reason: 'bad_password' });
     });
@@ -179,7 +215,9 @@ describe('Authentication', () => {
       // The legitimate holder's token and access token are now dead too.
       await refresh(cookieValue(first.headers['set-cookie'], 'mv_refresh')!).expect(401);
       await ctx.http.get(`${API}/users/me`).set(bearer(first.body.accessToken)).expect(401);
-      expect(await ctx.prisma.auditLog.count({ where: { action: 'auth.refresh.reuse_detected' } })).toBe(1);
+      expect(
+        await ctx.prisma.auditLog.count({ where: { action: 'auth.refresh.reuse_detected' } }),
+      ).toBe(1);
     });
 
     it('rotates mobile refresh tokens supplied in the body', async () => {
@@ -195,7 +233,10 @@ describe('Authentication', () => {
 
     it('does not accept a web session token as a mobile token', async () => {
       const { refreshCookie } = await registerUser(ctx);
-      await ctx.http.post(`${API}/auth/refresh`).send({ clientType: 'mobile', refreshToken: refreshCookie }).expect(401);
+      await ctx.http
+        .post(`${API}/auth/refresh`)
+        .send({ clientType: 'mobile', refreshToken: refreshCookie })
+        .expect(401);
     });
   });
 
@@ -221,7 +262,10 @@ describe('Authentication', () => {
       expect(list.body).toHaveLength(2);
       expect(list.body.filter((s: { current: boolean }) => s.current)).toHaveLength(1);
       const other = list.body.find((s: { clientType: string }) => s.clientType === 'mobile');
-      await ctx.http.delete(`${API}/auth/sessions/${other.id}`).set(bearer(accessToken)).expect(204);
+      await ctx.http
+        .delete(`${API}/auth/sessions/${other.id}`)
+        .set(bearer(accessToken))
+        .expect(204);
       await ctx.http.get(`${API}/users/me`).set(bearer(phone.body.accessToken)).expect(401);
     });
 
@@ -229,7 +273,10 @@ describe('Authentication', () => {
       const a = await registerUser(ctx);
       const b = await registerUser(ctx);
       const bSession = await ctx.prisma.session.findFirstOrThrow({ where: { userId: b.id } });
-      await ctx.http.delete(`${API}/auth/sessions/${bSession.id}`).set(bearer(a.accessToken)).expect(404);
+      await ctx.http
+        .delete(`${API}/auth/sessions/${bSession.id}`)
+        .set(bearer(a.accessToken))
+        .expect(404);
     });
   });
 
@@ -237,7 +284,10 @@ describe('Authentication', () => {
     it('verifies with the emailed token exactly once', async () => {
       const { email, accessToken } = await registerUser(ctx);
       const token = tokenFromMail(ctx, email, 'email_verification');
-      await ctx.http.post(`${API}/auth/email/verify`).send({ token }).expect(200, { verified: true });
+      await ctx.http
+        .post(`${API}/auth/email/verify`)
+        .send({ token })
+        .expect(200, { verified: true });
       const me = await ctx.http.get(`${API}/users/me`).set(bearer(accessToken)).expect(200);
       expect(me.body.emailVerified).toBe(true);
       const again = await ctx.http.post(`${API}/auth/email/verify`).send({ token }).expect(400);
@@ -247,26 +297,39 @@ describe('Authentication', () => {
     it('rejects expired tokens', async () => {
       const { email } = await registerUser(ctx);
       const token = tokenFromMail(ctx, email, 'email_verification');
-      await ctx.prisma.verificationToken.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
+      await ctx.prisma.verificationToken.updateMany({
+        data: { expiresAt: new Date(Date.now() - 1000) },
+      });
       await ctx.http.post(`${API}/auth/email/verify`).send({ token }).expect(400);
     });
 
     it('resend invalidates the previous link', async () => {
       const { email, accessToken } = await registerUser(ctx);
       const first = tokenFromMail(ctx, email, 'email_verification');
-      await ctx.http.post(`${API}/auth/email/resend`).set(bearer(accessToken)).expect(200, { sent: true });
+      await ctx.http
+        .post(`${API}/auth/email/resend`)
+        .set(bearer(accessToken))
+        .expect(200, { sent: true });
       const second = tokenFromMail(ctx, email, 'email_verification');
       expect(second).not.toBe(first);
       await ctx.http.post(`${API}/auth/email/verify`).send({ token: first }).expect(400);
       await ctx.http.post(`${API}/auth/email/verify`).send({ token: second }).expect(200);
-      await ctx.http.post(`${API}/auth/email/resend`).set(bearer(accessToken)).expect(200, { sent: false });
+      await ctx.http
+        .post(`${API}/auth/email/resend`)
+        .set(bearer(accessToken))
+        .expect(200, { sent: false });
     });
   });
 
   describe('password recovery and change', () => {
     it('always accepts forgot-password requests without revealing accounts', async () => {
-      await ctx.http.post(`${API}/auth/password/forgot`).send({ email: uniqueEmail('ghost') }).expect(202, { accepted: true });
-      expect(ctx.mail.outbox.filter((m) => m.template === 'password_reset' && m.to.startsWith('ghost'))).toHaveLength(0);
+      await ctx.http
+        .post(`${API}/auth/password/forgot`)
+        .send({ email: uniqueEmail('ghost') })
+        .expect(202, { accepted: true });
+      expect(
+        ctx.mail.outbox.filter((m) => m.template === 'password_reset' && m.to.startsWith('ghost')),
+      ).toHaveLength(0);
     });
 
     it('resets the password, verifies the email and signs out every session', async () => {
@@ -274,7 +337,10 @@ describe('Authentication', () => {
       await ctx.http.post(`${API}/auth/password/forgot`).send({ email }).expect(202);
       const token = tokenFromMail(ctx, email, 'password_reset');
       const newPassword = 'a brand new passphrase';
-      await ctx.http.post(`${API}/auth/password/reset`).send({ token, password: newPassword }).expect(200);
+      await ctx.http
+        .post(`${API}/auth/password/reset`)
+        .send({ token, password: newPassword })
+        .expect(200);
 
       await ctx.http.get(`${API}/users/me`).set(bearer(accessToken)).expect(401);
       await refresh(refreshCookie).expect(401);
@@ -282,7 +348,10 @@ describe('Authentication', () => {
       const res = await login(ctx, email, newPassword).expect(200);
       expect(res.body.user.emailVerified).toBe(true);
       expect(ctx.mail.latest(email, 'password_changed')).toBeDefined();
-      await ctx.http.post(`${API}/auth/password/reset`).send({ token, password: 'yet another passphrase' }).expect(400);
+      await ctx.http
+        .post(`${API}/auth/password/reset`)
+        .send({ token, password: 'yet another passphrase' })
+        .expect(400);
     });
 
     it('changes the password, keeping only the current session', async () => {

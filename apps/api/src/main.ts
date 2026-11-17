@@ -13,7 +13,10 @@ async function bootstrap(): Promise<void> {
   if (existsSync(envFile)) process.loadEnvFile(envFile);
 
   const config = loadConfig(); // fail fast with a readable message on misconfiguration
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true, bodyParser: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    bodyParser: false,
+  });
   configureApp(app, config);
   await app.listen(config.port, '0.0.0.0');
 }

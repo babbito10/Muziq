@@ -19,12 +19,18 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // Render per request so configuration comes from the runtime environment, not the build.
   await connection();
-  const runtimeConfig = serialiseRuntimeConfig({ apiUrl: process.env.PUBLIC_API_URL ?? DEFAULT_API_URL });
+  const runtimeConfig = serialiseRuntimeConfig({
+    apiUrl: process.env.PUBLIC_API_URL ?? DEFAULT_API_URL,
+  });
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
-        <script id={RUNTIME_CONFIG_ID} type="application/json" dangerouslySetInnerHTML={{ __html: runtimeConfig }} />
+        <script
+          id={RUNTIME_CONFIG_ID}
+          type="application/json"
+          dangerouslySetInnerHTML={{ __html: runtimeConfig }}
+        />
       </head>
       <body>
         <AuthProvider>{children}</AuthProvider>

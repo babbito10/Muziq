@@ -46,15 +46,41 @@ export default function AdminLoginPage() {
         <form onSubmit={submit} className="flex flex-col gap-4">
           {error && <Alert tone="danger">{error}</Alert>}
           {mfaToken ? (
-            <TextField label="Authentication code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} autoFocus value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+            <TextField
+              label="Authentication code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              autoFocus
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+            />
           ) : (
             <>
-              <TextField label="Email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
-              <TextField label="Password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <TextField
+                label="Email"
+                type="email"
+                autoComplete="username"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <TextField
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </>
           )}
-          <Button type="submit" loading={busy} fullWidth>{mfaToken ? 'Verify' : 'Sign in'}</Button>
-          <p className="text-xs text-fg-subtle">Staff accounts only. All actions are audit-logged.</p>
+          <Button type="submit" loading={busy} fullWidth>
+            {mfaToken ? 'Verify' : 'Sign in'}
+          </Button>
+          <p className="text-xs text-fg-subtle">
+            Staff accounts only. All actions are audit-logged.
+          </p>
         </form>
       </Card>
     </main>

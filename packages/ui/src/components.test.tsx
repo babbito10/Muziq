@@ -14,7 +14,11 @@ describe('Button', () => {
 
   it('is disabled and busy while loading', async () => {
     const onClick = jest.fn();
-    render(<Button loading onClick={onClick}>Save</Button>);
+    render(
+      <Button loading onClick={onClick}>
+        Save
+      </Button>,
+    );
     const button = screen.getByRole('button', { name: 'Save' });
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute('aria-busy', 'true');
@@ -65,7 +69,13 @@ describe('Avatar', () => {
 
 describe('EmptyState', () => {
   it('renders title, description and action', () => {
-    render(<EmptyState title="No sessions" description="Nothing here yet" action={<Button>Refresh</Button>} />);
+    render(
+      <EmptyState
+        title="No sessions"
+        description="Nothing here yet"
+        action={<Button>Refresh</Button>}
+      />,
+    );
     expect(screen.getByRole('heading', { name: 'No sessions' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();
   });

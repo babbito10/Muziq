@@ -12,7 +12,12 @@ function layout(title: string, paragraphs: string[], action?: { label: string; u
 ${paragraphs.map((p) => `<p style="margin:0 0 16px;line-height:1.5;color:#c9cfe0">${escapeHtml(p)}</p>`).join('')}
 ${action ? `<p style="margin:24px 0"><a href="${escapeHtml(action.url)}" style="background:#2dd4bf;color:#042f2e;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:bold">${escapeHtml(action.label)}</a></p><p style="font-size:12px;color:#a3acc4;word-break:break-all">${escapeHtml(action.url)}</p>` : ''}
 </td></tr></table></td></tr></table></body></html>`;
-  const text = [title, '', ...paragraphs, ...(action ? ['', `${action.label}: ${action.url}`] : [])].join('\n');
+  const text = [
+    title,
+    '',
+    ...paragraphs,
+    ...(action ? ['', `${action.label}: ${action.url}`] : []),
+  ].join('\n');
   return { html, text };
 }
 
@@ -22,7 +27,10 @@ export function verificationEmail(name: string, url: string) {
     subject: 'Verify your MusicVerse email',
     ...layout(
       `Welcome, ${name}`,
-      ['Confirm your email address to secure your account and unlock creator features.', 'This link expires in 24 hours.'],
+      [
+        'Confirm your email address to secure your account and unlock creator features.',
+        'This link expires in 24 hours.',
+      ],
       { label: 'Verify email', url },
     ),
   };

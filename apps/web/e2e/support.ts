@@ -7,7 +7,10 @@ export function uniqueEmail(prefix: string): string {
   return `${prefix}.${Date.now()}.${Math.floor(Math.random() * 1e6)}@e2e.musicverse.test`;
 }
 
-export async function register(page: Page, opts: { email: string; displayName: string }): Promise<void> {
+export async function register(
+  page: Page,
+  opts: { email: string; displayName: string },
+): Promise<void> {
   await page.goto('/register');
   await page.getByLabel('Display name').fill(opts.displayName);
   await page.getByLabel('Email').fill(opts.email);
@@ -21,11 +24,17 @@ export async function register(page: Page, opts: { email: string; displayName: s
 export async function linkFromEmail(to: string, pathname: string): Promise<string> {
   const deadline = Date.now() + 15_000;
   while (Date.now() < deadline) {
-    const search = await fetch(`${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`);
+    const search = await fetch(
+      `${MAILPIT_URL}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`,
+    );
     const { messages } = (await search.json()) as { messages: Array<{ ID: string }> };
     if (messages.length > 0) {
-      const message = (await (await fetch(`${MAILPIT_URL}/api/v1/message/${messages[0]!.ID}`)).json()) as { Text: string };
-      const match = new RegExp(`https?://[^\\s]+${pathname.replace('/', '\\/')}\\?token=[A-Za-z0-9_-]+`).exec(message.Text);
+      const message = (await (
+        await fetch(`${MAILPIT_URL}/api/v1/message/${messages[0]!.ID}`)
+      ).json()) as { Text: string };
+      const match = new RegExp(
+        `https?://[^\\s]+${pathname.replace('/', '\\/')}\\?token=[A-Za-z0-9_-]+`,
+      ).exec(message.Text);
       if (match) return match[0];
     }
     await new Promise((r) => setTimeout(r, 300));

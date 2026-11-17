@@ -1,9 +1,4 @@
-import {
-  isRoleKey,
-  PERMISSION_KEYS,
-  type PermissionKey,
-  type RoleKey,
-} from '@musicverse/types';
+import { isRoleKey, PERMISSION_KEYS, type PermissionKey, type RoleKey } from '@musicverse/types';
 import { ROLE_DEFINITIONS } from './matrix';
 
 /** Union of permissions granted by the given roles, in canonical order. Unknown roles are ignored. */
@@ -32,7 +27,10 @@ export function isStaff(roles: readonly string[]): boolean {
 
 export type GrantDecision =
   | { allowed: true }
-  | { allowed: false; reason: 'unknown_role' | 'not_grantable' | 'insufficient_privilege' | 'self_lockout' };
+  | {
+      allowed: false;
+      reason: 'unknown_role' | 'not_grantable' | 'insufficient_privilege' | 'self_lockout';
+    };
 
 /**
  * Decide whether an administrator holding `actorRoles` may grant or revoke `role` on a target user.

@@ -24,7 +24,11 @@ export function Alert({ tone = 'info', title, children, action, className }: Ale
   return (
     <div
       role={urgent ? 'alert' : 'status'}
-      className={cn('flex items-start justify-between gap-4 rounded-xl border px-4 py-3 text-sm', tones[tone], className)}
+      className={cn(
+        'flex items-start justify-between gap-4 rounded-xl border px-4 py-3 text-sm',
+        tones[tone],
+        className,
+      )}
     >
       <div className="text-fg">
         {title && <p className="font-semibold">{title}</p>}

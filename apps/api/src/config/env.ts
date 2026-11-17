@@ -20,7 +20,9 @@ const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
-    LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+    LOG_LEVEL: z
+      .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+      .default('info'),
     WEB_APP_URL: z.url().default('http://localhost:3000'),
     CORS_ORIGINS: csv,
     TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
@@ -34,7 +36,10 @@ const envSchema = z
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     MFA_ENCRYPTION_KEY: z
       .string()
-      .refine((v) => Buffer.from(v, 'base64').length === 32, 'MFA_ENCRYPTION_KEY must be 32 bytes, base64-encoded'),
+      .refine(
+        (v) => Buffer.from(v, 'base64').length === 32,
+        'MFA_ENCRYPTION_KEY must be 32 bytes, base64-encoded',
+      ),
     COOKIE_SECURE: bool(true),
     RATE_LIMIT_ENABLED: bool(true),
 
@@ -62,11 +67,19 @@ const envSchema = z
         });
       }
       if (!env.COOKIE_SECURE) {
-        ctx.addIssue({ code: 'custom', path: ['COOKIE_SECURE'], message: 'Cookies must be Secure in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['COOKIE_SECURE'],
+          message: 'Cookies must be Secure in production',
+        });
       }
     }
     if (env.MAIL_TRANSPORT === 'smtp' && !env.SMTP_HOST) {
-      ctx.addIssue({ code: 'custom', path: ['SMTP_HOST'], message: 'SMTP_HOST is required for smtp transport' });
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SMTP_HOST'],
+        message: 'SMTP_HOST is required for smtp transport',
+      });
     }
   });
 
@@ -108,7 +121,9 @@ export class ConfigValidationError extends Error {}
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
   const result = envSchema.safeParse(source);
   if (!result.success) {
-    const problems = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    const problems = result.error.issues
+      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
     throw new ConfigValidationError(`Invalid environment configuration:\n${problems}`);
   }
   const env = result.data;

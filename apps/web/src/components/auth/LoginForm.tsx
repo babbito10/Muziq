@@ -27,7 +27,11 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   if (mfaToken) {
     return (
-      <form noValidate onSubmit={(e) => mfa.handleSubmit(e, { mfaToken, code })} className="flex flex-col gap-4">
+      <form
+        noValidate
+        onSubmit={(e) => mfa.handleSubmit(e, { mfaToken, code })}
+        className="flex flex-col gap-4"
+      >
         <p className="text-sm text-fg-muted">Enter the 6-digit code from your authenticator app.</p>
         {mfa.formError && <Alert tone="danger">{mfa.formError}</Alert>}
         <TextField
@@ -44,7 +48,13 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <Button type="submit" loading={mfa.submitting} fullWidth size="lg">
           Verify
         </Button>
-        <Button variant="ghost" onClick={() => { setMfaToken(null); setCode(''); }}>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setMfaToken(null);
+            setCode('');
+          }}
+        >
           Use a different account
         </Button>
       </form>
@@ -52,7 +62,11 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   }
 
   return (
-    <form noValidate onSubmit={(e) => credentials.handleSubmit(e, { email, password })} className="flex flex-col gap-4">
+    <form
+      noValidate
+      onSubmit={(e) => credentials.handleSubmit(e, { email, password })}
+      className="flex flex-col gap-4"
+    >
       {credentials.formError && <Alert tone="danger">{credentials.formError}</Alert>}
       <TextField
         label="Email"

@@ -17,7 +17,11 @@ export function EmptyState({ title, description, icon, action, className }: Empt
         className,
       )}
     >
-      {icon && <div className="text-fg-subtle" aria-hidden="true">{icon}</div>}
+      {icon && (
+        <div className="text-fg-subtle" aria-hidden="true">
+          {icon}
+        </div>
+      )}
       <h3 className="font-display text-base font-semibold text-fg">{title}</h3>
       {description && <p className="max-w-sm text-sm text-fg-muted">{description}</p>}
       {action}

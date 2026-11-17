@@ -18,7 +18,11 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   if (!token) {
     return (
       <Alert tone="danger" title="This link is incomplete">
-        Open the link from your email again, or <Link className="underline" href="/forgot-password">request a new one</Link>.
+        Open the link from your email again, or{' '}
+        <Link className="underline" href="/forgot-password">
+          request a new one
+        </Link>
+        .
       </Alert>
     );
   }
@@ -35,7 +39,11 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
     );
   }
   return (
-    <form noValidate onSubmit={(e) => form.handleSubmit(e, { token, password })} className="flex flex-col gap-4">
+    <form
+      noValidate
+      onSubmit={(e) => form.handleSubmit(e, { token, password })}
+      className="flex flex-col gap-4"
+    >
       {(form.formError || form.errors.token) && (
         <Alert tone="danger">{form.formError ?? form.errors.token}</Alert>
       )}

@@ -12,11 +12,17 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection();
-  const runtimeConfig = serialiseRuntimeConfig({ apiUrl: process.env.PUBLIC_API_URL ?? DEFAULT_API_URL });
+  const runtimeConfig = serialiseRuntimeConfig({
+    apiUrl: process.env.PUBLIC_API_URL ?? DEFAULT_API_URL,
+  });
   return (
     <html lang="en" data-theme="dark">
       <head>
-        <script id={RUNTIME_CONFIG_ID} type="application/json" dangerouslySetInnerHTML={{ __html: runtimeConfig }} />
+        <script
+          id={RUNTIME_CONFIG_ID}
+          type="application/json"
+          dangerouslySetInnerHTML={{ __html: runtimeConfig }}
+        />
       </head>
       <body>
         <AdminAuthProvider>{children}</AdminAuthProvider>

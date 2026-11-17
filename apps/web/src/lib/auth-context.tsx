@@ -3,7 +3,16 @@
 import { isApiError } from '@musicverse/api-client';
 import type { CurrentUser, LoginResponse } from '@musicverse/types';
 import type { LoginInput, RegisterInput } from '@musicverse/validation';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { api, onSessionExpired } from './api';
 import { applyTheme } from './theme';
 

@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { linkFromEmail, register, uniqueEmail } from './support';
 
-test('Journey 2: an artist registers (account + verified email + artist capability)', async ({ page }) => {
+test('Journey 2: an artist registers (account + verified email + artist capability)', async ({
+  page,
+}) => {
   const email = uniqueEmail('artist');
   await register(page, { email, displayName: 'Amani Artist' });
 

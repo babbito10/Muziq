@@ -89,7 +89,11 @@ export function verifyTotp(
   return null;
 }
 
-export function otpauthUrl(params: { secret: string; accountName: string; issuer?: string }): string {
+export function otpauthUrl(params: {
+  secret: string;
+  accountName: string;
+  issuer?: string;
+}): string {
   const issuer = params.issuer ?? 'MusicVerse';
   const label = encodeURIComponent(`${issuer}:${params.accountName}`);
   const query = new URLSearchParams({

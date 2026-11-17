@@ -65,7 +65,9 @@ describe('usernameSchema', () => {
 describe('updateProfileSchema', () => {
   it('requires at least one field', () => {
     expect(updateProfileSchema.safeParse({}).success).toBe(false);
-    expect(updateProfileSchema.safeParse({ countryCode: 'ke' }).data).toEqual({ countryCode: 'KE' });
+    expect(updateProfileSchema.safeParse({ countryCode: 'ke' }).data).toEqual({
+      countryCode: 'KE',
+    });
   });
 });
 
@@ -78,7 +80,12 @@ describe('adminListUsersQuerySchema', () => {
 
 describe('issue helpers', () => {
   it('maps zod errors to field errors', () => {
-    const result = registerSchema.safeParse({ email: 'nope', password: 'x', displayName: '', acceptTerms: true });
+    const result = registerSchema.safeParse({
+      email: 'nope',
+      password: 'x',
+      displayName: '',
+      acceptTerms: true,
+    });
     expect(result.success).toBe(false);
     if (result.success) return;
     const errors = fieldErrors(toValidationIssues(result.error));

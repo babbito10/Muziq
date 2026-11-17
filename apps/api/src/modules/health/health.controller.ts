@@ -13,7 +13,9 @@ const TIMEOUT_MS = 2000;
 function withTimeout<T>(promise: Promise<T>): Promise<T> {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`timed out after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`timed out after ${TIMEOUT_MS}ms`)), TIMEOUT_MS),
+    ),
   ]);
 }
 
@@ -45,9 +47,17 @@ export class HealthController {
         checks[name] = { status: 'down', error: (error as Error).message.slice(0, 200) };
       }
     };
-    await Promise.all([probe('database', () => this.prisma.ping()), probe('redis', () => this.redis.ping())]);
+    await Promise.all([
+      probe('database', () => this.prisma.ping()),
+      probe('redis', () => this.redis.ping()),
+    ]);
     const healthy = Object.values(checks).every((c) => c.status === 'up');
     if (!healthy) res.status(503);
-    return { status: healthy ? 'ok' : 'degraded', checks, version: VERSION, uptimeSeconds: Math.round(process.uptime()) };
+    return {
+      status: healthy ? 'ok' : 'degraded',
+      checks,
+      version: VERSION,
+      uptimeSeconds: Math.round(process.uptime()),
+    };
   }
 }

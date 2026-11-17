@@ -1,6 +1,14 @@
 import { isApiError } from '@musicverse/api-client';
 import type { CurrentUser, LoginResponse } from '@musicverse/types';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { api, onSessionExpired } from './api';
 
 type Status = 'loading' | 'authenticated' | 'anonymous';
@@ -51,8 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!result.mfaRequired) signedIn(result.user);
         return result;
       },
-      completeMfa: async (mfaToken, code) => signedIn((await api.auth.verifyMfa({ mfaToken, code })).user),
-      register: async (input) => signedIn((await api.auth.register({ ...input, acceptTerms: true })).user),
+      completeMfa: async (mfaToken, code) =>
+        signedIn((await api.auth.verifyMfa({ mfaToken, code })).user),
+      register: async (input) =>
+        signedIn((await api.auth.register({ ...input, acceptTerms: true })).user),
       logout: async () => {
         try {
           await api.auth.logout();

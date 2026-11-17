@@ -54,7 +54,8 @@ export class TokenService {
         audience: ACCESS_AUDIENCE,
         algorithms: ['HS256'],
       });
-      if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string') throw new Error('claims');
+      if (typeof payload.sub !== 'string' || typeof payload.sid !== 'string')
+        throw new Error('claims');
       return { userId: payload.sub, sessionId: payload.sid };
     } catch (error) {
       const expired = error instanceof joseErrors.JWTExpired;
@@ -84,10 +85,18 @@ export class TokenService {
         audience: MFA_AUDIENCE,
         algorithms: ['HS256'],
       });
-      if (typeof payload.sub !== 'string' || typeof payload.jti !== 'string') throw new Error('claims');
-      return { userId: payload.sub, clientType: payload.ct as ClientType, challengeId: payload.jti };
+      if (typeof payload.sub !== 'string' || typeof payload.jti !== 'string')
+        throw new Error('claims');
+      return {
+        userId: payload.sub,
+        clientType: payload.ct as ClientType,
+        challengeId: payload.jti,
+      };
     } catch {
-      throw AppError.unauthorized('INVALID_TOKEN', 'Your sign-in challenge has expired. Please sign in again.');
+      throw AppError.unauthorized(
+        'INVALID_TOKEN',
+        'Your sign-in challenge has expired. Please sign in again.',
+      );
     }
   }
 }

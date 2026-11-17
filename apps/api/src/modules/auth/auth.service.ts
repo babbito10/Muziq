@@ -90,12 +90,20 @@ export class AuthService {
           data: {
             email: input.email,
             passwordHash,
-            profile: { create: { displayName: input.displayName, preferences: DEFAULT_PREFERENCES as never } },
+            profile: {
+              create: { displayName: input.displayName, preferences: DEFAULT_PREFERENCES as never },
+            },
             roles: { create: { roleId: listenerRoleId } },
           },
         });
         await this.audit.record(
-          { action: 'auth.register', actorId: created.id, targetType: 'user', targetId: created.id, metadata: { method: 'password' } },
+          {
+            action: 'auth.register',
+            actorId: created.id,
+            targetType: 'user',
+            targetId: created.id,
+            metadata: { method: 'password' },
+          },
           meta,
           tx,
         );
@@ -103,7 +111,10 @@ export class AuthService {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw AppError.conflict('EMAIL_ALREADY_REGISTERED', 'An account with this email already exists. Try signing in.');
+        throw AppError.conflict(
+          'EMAIL_ALREADY_REGISTERED',
+          'An account with this email already exists. Try signing in.',
+        );
       }
       throw error;
     }
@@ -112,20 +123,32 @@ export class AuthService {
     return this.issueSession(user.id, input.clientType, meta);
   }
 
-  async login(input: Output<LoginInput>, meta: RequestMeta): Promise<LoginResponse | IssuedSession> {
+  async login(
+    input: Output<LoginInput>,
+    meta: RequestMeta,
+  ): Promise<LoginResponse | IssuedSession> {
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
 
     if (!user || !user.passwordHash) {
       await this.passwords.verifyDummy(input.password);
       await this.audit.record(
-        { action: 'auth.login.failure', metadata: { reason: 'unknown_account', emailHash: sha256Hex(input.email) } },
+        {
+          action: 'auth.login.failure',
+          metadata: { reason: 'unknown_account', emailHash: sha256Hex(input.email) },
+        },
         meta,
       );
       throw INVALID_CREDENTIALS();
     }
     if (!(await this.passwords.verify(user.passwordHash, input.password))) {
       await this.audit.record(
-        { action: 'auth.login.failure', actorId: user.id, targetType: 'user', targetId: user.id, metadata: { reason: 'bad_password' } },
+        {
+          action: 'auth.login.failure',
+          actorId: user.id,
+          targetType: 'user',
+          targetId: user.id,
+          metadata: { reason: 'bad_password' },
+        },
         meta,
       );
       throw INVALID_CREDENTIALS();
@@ -141,7 +164,10 @@ export class AuthService {
     method: 'password' | OAuthProvider,
   ): Promise<LoginResponse | IssuedSession> {
     if (user.status === 'suspended') {
-      throw AppError.forbidden('This account has been suspended. Contact support for help.', 'ACCOUNT_SUSPENDED');
+      throw AppError.forbidden(
+        'This account has been suspended. Contact support for help.',
+        'ACCOUNT_SUSPENDED',
+      );
     }
     if (user.status !== 'active') throw INVALID_CREDENTIALS();
 
@@ -160,7 +186,10 @@ export class AuthService {
   ): Promise<IssuedSession> {
     const claims = await this.tokens.verifyMfaToken(input.mfaToken);
     if (claims.clientType !== input.clientType) {
-      throw AppError.unauthorized('INVALID_TOKEN', 'Your sign-in challenge is not valid for this app.');
+      throw AppError.unauthorized(
+        'INVALID_TOKEN',
+        'Your sign-in challenge is not valid for this app.',
+      );
     }
     const user = await this.prisma.user.findUnique({ where: { id: claims.userId } });
     if (!user || user.status !== 'active') throw INVALID_CREDENTIALS();
@@ -169,7 +198,10 @@ export class AuthService {
   }
 
   private async assertStaff(userId: string): Promise<void> {
-    const roles = await this.prisma.userRole.findMany({ where: { userId }, select: { role: { select: { key: true } } } });
+    const roles = await this.prisma.userRole.findMany({
+      where: { userId },
+      select: { role: { select: { key: true } } },
+    });
     if (!isStaff(roles.map((r) => r.role.key))) {
       throw AppError.forbidden('The admin console is only available to MusicVerse staff.');
     }
@@ -185,7 +217,13 @@ export class AuthService {
       const created = await this.sessions.create(userId, clientType, meta, tx);
       await tx.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
       await this.audit.record(
-        { action: 'auth.login.success', actorId: userId, targetType: 'session', targetId: created.session.id, metadata: { method, clientType } },
+        {
+          action: 'auth.login.success',
+          actorId: userId,
+          targetType: 'session',
+          targetId: created.session.id,
+          metadata: { method, clientType },
+        },
         meta,
         tx,
       );
@@ -208,8 +246,15 @@ export class AuthService {
     meta: RequestMeta,
   ): Promise<{ accessToken: string; expiresIn: number; refreshToken: string }> {
     const rotated = await this.sessions.rotate(refreshToken, clientType, meta);
-    const accessToken = await this.tokens.signAccessToken({ userId: rotated.session.userId, sessionId: rotated.session.id });
-    return { accessToken, expiresIn: this.tokens.accessTtlSeconds, refreshToken: rotated.refreshToken };
+    const accessToken = await this.tokens.signAccessToken({
+      userId: rotated.session.userId,
+      sessionId: rotated.session.id,
+    });
+    return {
+      accessToken,
+      expiresIn: this.tokens.accessTtlSeconds,
+      refreshToken: rotated.refreshToken,
+    };
   }
 
   async logout(refreshToken: string | undefined, meta: RequestMeta): Promise<void> {
@@ -218,7 +263,12 @@ export class AuthService {
     if (!session || session.revokedAt) return;
     await this.sessions.revoke(session.id, 'logout');
     await this.audit.record(
-      { action: 'auth.logout', actorId: session.userId, targetType: 'session', targetId: session.id },
+      {
+        action: 'auth.logout',
+        actorId: session.userId,
+        targetType: 'session',
+        targetId: session.id,
+      },
       meta,
     );
   }
@@ -227,32 +277,64 @@ export class AuthService {
     const session = await this.prisma.session.findFirst({ where: { id: sessionId, userId } });
     if (!session) throw AppError.notFound('Session not found.');
     if (await this.sessions.revoke(session.id, 'user_revoked')) {
-      await this.audit.record({ action: 'auth.session.revoked', actorId: userId, targetType: 'session', targetId: session.id }, meta);
+      await this.audit.record(
+        {
+          action: 'auth.session.revoked',
+          actorId: userId,
+          targetType: 'session',
+          targetId: session.id,
+        },
+        meta,
+      );
     }
   }
 
   // ------------------------------------------------------------------ email verification
 
-  private async sendVerificationEmail(userId: string, email: string, name: string): Promise<boolean> {
+  private async sendVerificationEmail(
+    userId: string,
+    email: string,
+    name: string,
+  ): Promise<boolean> {
     const token = await this.verification.issue(userId, 'email_verification');
-    return this.mail.send({ to: email, ...verificationEmail(name, this.mail.link('/verify-email', { token })) });
+    return this.mail.send({
+      to: email,
+      ...verificationEmail(name, this.mail.link('/verify-email', { token })),
+    });
   }
 
   async verifyEmail(token: string, meta: RequestMeta): Promise<void> {
     const userId = await this.verification.consume(token, 'email_verification');
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
     if (!user.emailVerifiedAt) {
-      await this.prisma.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { emailVerifiedAt: new Date() },
+      });
       await this.authz.invalidateUser(userId);
-      await this.audit.record({ action: 'auth.email.verified', actorId: userId, targetType: 'user', targetId: userId }, meta);
+      await this.audit.record(
+        { action: 'auth.email.verified', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+      );
     }
   }
 
   async resendVerification(userId: string): Promise<{ sent: boolean }> {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { profile: true },
+    });
     if (user.emailVerifiedAt) return { sent: false };
-    const sent = await this.sendVerificationEmail(user.id, user.email, user.profile?.displayName ?? 'there');
-    if (!sent) throw AppError.unavailable('SERVICE_UNAVAILABLE', 'We could not send the email right now. Try again shortly.');
+    const sent = await this.sendVerificationEmail(
+      user.id,
+      user.email,
+      user.profile?.displayName ?? 'there',
+    );
+    if (!sent)
+      throw AppError.unavailable(
+        'SERVICE_UNAVAILABLE',
+        'We could not send the email right now. Try again shortly.',
+      );
     return { sent: true };
   }
 
@@ -260,20 +342,38 @@ export class AuthService {
 
   /** Always succeeds from the caller's perspective to avoid revealing which emails are registered. */
   async forgotPassword(email: string, meta: RequestMeta): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { email }, include: { profile: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
     if (!user || user.status !== 'active') return;
     const token = await this.verification.issue(user.id, 'password_reset');
-    await this.audit.record({ action: 'auth.password.reset_requested', actorId: user.id, targetType: 'user', targetId: user.id }, meta);
+    await this.audit.record(
+      {
+        action: 'auth.password.reset_requested',
+        actorId: user.id,
+        targetType: 'user',
+        targetId: user.id,
+      },
+      meta,
+    );
     await this.mail.send({
       to: user.email,
-      ...passwordResetEmail(user.profile?.displayName ?? 'there', this.mail.link('/reset-password', { token })),
+      ...passwordResetEmail(
+        user.profile?.displayName ?? 'there',
+        this.mail.link('/reset-password', { token }),
+      ),
     });
   }
 
   async resetPassword(input: ResetPasswordInput, meta: RequestMeta): Promise<void> {
     const userId = await this.verification.consume(input.token, 'password_reset');
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
-    if (user.status !== 'active') throw AppError.forbidden('This account is not active.', 'ACCOUNT_SUSPENDED');
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { profile: true },
+    });
+    if (user.status !== 'active')
+      throw AppError.forbidden('This account is not active.', 'ACCOUNT_SUSPENDED');
     const passwordHash = await this.passwords.hash(input.password);
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
@@ -281,11 +381,18 @@ export class AuthService {
         // Completing a reset proves control of the inbox, so the email is verified too.
         data: { passwordHash, emailVerifiedAt: user.emailVerifiedAt ?? new Date() },
       });
-      await this.audit.record({ action: 'auth.password.reset', actorId: userId, targetType: 'user', targetId: userId }, meta, tx);
+      await this.audit.record(
+        { action: 'auth.password.reset', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+        tx,
+      );
     });
     await this.sessions.revokeAllForUser(userId, 'password_reset');
     await this.authz.invalidateUser(userId);
-    await this.mail.send({ to: user.email, ...passwordChangedEmail(user.profile?.displayName ?? 'there') });
+    await this.mail.send({
+      to: user.email,
+      ...passwordChangedEmail(user.profile?.displayName ?? 'there'),
+    });
   }
 
   async changePassword(
@@ -294,17 +401,30 @@ export class AuthService {
     input: ChangePasswordInput,
     meta: RequestMeta,
   ): Promise<void> {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
-    if (!user.passwordHash || !(await this.passwords.verify(user.passwordHash, input.currentPassword))) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { profile: true },
+    });
+    if (
+      !user.passwordHash ||
+      !(await this.passwords.verify(user.passwordHash, input.currentPassword))
+    ) {
       throw AppError.unauthorized('INVALID_CREDENTIALS', 'Your current password is incorrect.');
     }
     const passwordHash = await this.passwords.hash(input.newPassword);
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({ where: { id: userId }, data: { passwordHash } });
-      await this.audit.record({ action: 'auth.password.changed', actorId: userId, targetType: 'user', targetId: userId }, meta, tx);
+      await this.audit.record(
+        { action: 'auth.password.changed', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+        tx,
+      );
     });
     await this.sessions.revokeAllForUser(userId, 'password_changed', currentSessionId);
-    await this.mail.send({ to: user.email, ...passwordChangedEmail(user.profile?.displayName ?? 'there') });
+    await this.mail.send({
+      to: user.email,
+      ...passwordChangedEmail(user.profile?.displayName ?? 'there'),
+    });
   }
 
   // ------------------------------------------------------------------ social sign-in
@@ -320,10 +440,14 @@ export class AuthService {
       where: { provider_providerAccountId: { provider, providerAccountId: identity.subject } },
       include: { user: true },
     });
-    if (linked) return this.completePrimaryAuthentication(linked.user, input.clientType, meta, provider);
+    if (linked)
+      return this.completePrimaryAuthentication(linked.user, input.clientType, meta, provider);
 
     if (!identity.email) {
-      throw AppError.badRequest('PROVIDER_TOKEN_INVALID', 'Your provider did not share an email address, which MusicVerse requires.');
+      throw AppError.badRequest(
+        'PROVIDER_TOKEN_INVALID',
+        'Your provider did not share an email address, which MusicVerse requires.',
+      );
     }
 
     const existing = await this.prisma.user.findUnique({ where: { email: identity.email } });
@@ -331,12 +455,20 @@ export class AuthService {
       // Only link when the provider vouches for the email; otherwise an attacker could take over
       // an account by creating a provider identity with someone else's address.
       if (!identity.emailVerified) {
-        throw AppError.conflict('EMAIL_ALREADY_REGISTERED', 'An account with this email already exists. Sign in with your password.');
+        throw AppError.conflict(
+          'EMAIL_ALREADY_REGISTERED',
+          'An account with this email already exists. Sign in with your password.',
+        );
       }
       const wasUnverified = !existing.emailVerifiedAt;
       const user = await this.prisma.$transaction(async (tx) => {
         await tx.oAuthAccount.create({
-          data: { userId: existing.id, provider, providerAccountId: identity.subject, email: identity.email },
+          data: {
+            userId: existing.id,
+            provider,
+            providerAccountId: identity.subject,
+            email: identity.email,
+          },
         });
         const updated = await tx.user.update({
           where: { id: existing.id },
@@ -346,7 +478,13 @@ export class AuthService {
             : {},
         });
         await this.audit.record(
-          { action: 'auth.oauth.linked', actorId: existing.id, targetType: 'user', targetId: existing.id, metadata: { provider, clearedUnverifiedPassword: wasUnverified } },
+          {
+            action: 'auth.oauth.linked',
+            actorId: existing.id,
+            targetType: 'user',
+            targetId: existing.id,
+            metadata: { provider, clearedUnverifiedPassword: wasUnverified },
+          },
           meta,
           tx,
         );
@@ -361,7 +499,12 @@ export class AuthService {
       throw AppError.forbidden('Administrator accounts cannot be created through social sign-in.');
     }
     const listenerRoleId = await this.roles.idFor('listener');
-    const displayName = (input.displayName ?? identity.name ?? identity.email.split('@')[0] ?? 'Listener').slice(0, 80);
+    const displayName = (
+      input.displayName ??
+      identity.name ??
+      identity.email.split('@')[0] ??
+      'Listener'
+    ).slice(0, 80);
     const user = await this.prisma.$transaction(async (tx) => {
       const created = await tx.user.create({
         data: {
@@ -369,11 +512,19 @@ export class AuthService {
           emailVerifiedAt: identity.emailVerified ? new Date() : null,
           profile: { create: { displayName, preferences: DEFAULT_PREFERENCES as never } },
           roles: { create: { roleId: listenerRoleId } },
-          oauthAccounts: { create: { provider, providerAccountId: identity.subject, email: identity.email } },
+          oauthAccounts: {
+            create: { provider, providerAccountId: identity.subject, email: identity.email },
+          },
         },
       });
       await this.audit.record(
-        { action: 'auth.oauth.registered', actorId: created.id, targetType: 'user', targetId: created.id, metadata: { provider } },
+        {
+          action: 'auth.oauth.registered',
+          actorId: created.id,
+          targetType: 'user',
+          targetId: created.id,
+          metadata: { provider },
+        },
         meta,
         tx,
       );

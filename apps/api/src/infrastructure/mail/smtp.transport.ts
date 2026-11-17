@@ -6,7 +6,13 @@ export class SmtpMailTransport implements MailTransport {
   readonly name = 'smtp';
   private readonly transporter: Transporter;
 
-  constructor(options: { host: string; port?: number; secure: boolean; user?: string; password?: string }) {
+  constructor(options: {
+    host: string;
+    port?: number;
+    secure: boolean;
+    user?: string;
+    password?: string;
+  }) {
     this.transporter = createTransport({
       host: options.host,
       port: options.port ?? (options.secure ? 465 : 587),

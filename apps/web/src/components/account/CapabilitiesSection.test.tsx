@@ -7,7 +7,14 @@ let user: Record<string, unknown>;
 jest.mock('@/lib/auth-context', () => ({ useAuth: () => ({ user, setUser }) }));
 const addCapability = jest.fn();
 const removeCapability = jest.fn();
-jest.mock('@/lib/api', () => ({ api: { users: { addCapability: (...a: unknown[]) => addCapability(...a), removeCapability: (...a: unknown[]) => removeCapability(...a) } } }));
+jest.mock('@/lib/api', () => ({
+  api: {
+    users: {
+      addCapability: (...a: unknown[]) => addCapability(...a),
+      removeCapability: (...a: unknown[]) => removeCapability(...a),
+    },
+  },
+}));
 
 beforeEach(() => {
   jest.resetAllMocks();

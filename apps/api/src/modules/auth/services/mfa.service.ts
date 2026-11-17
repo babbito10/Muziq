@@ -25,7 +25,9 @@ export class MfaService {
   ) {}
 
   async isEnabled(userId: string): Promise<boolean> {
-    const factor = await this.prisma.mfaFactor.findUnique({ where: { userId_type: { userId, type: 'totp' } } });
+    const factor = await this.prisma.mfaFactor.findUnique({
+      where: { userId_type: { userId, type: 'totp' } },
+    });
     return !!factor?.confirmedAt;
   }
 
@@ -48,21 +50,37 @@ export class MfaService {
   }
 
   async confirmSetup(userId: string, code: string, meta: RequestMeta): Promise<void> {
-    const factor = await this.prisma.mfaFactor.findUnique({ where: { userId_type: { userId, type: 'totp' } } });
-    if (!factor) throw AppError.badRequest('MFA_NOT_ENABLED', 'Start two-step verification setup first.');
-    if (factor.confirmedAt) throw AppError.conflict('MFA_ALREADY_ENABLED', 'Two-step verification is already enabled.');
-    const step = verifyTotp(decryptSecret(factor.secretEncrypted, this.config.auth.mfaEncryptionKey), code);
-    if (step === null) throw AppError.badRequest('INVALID_MFA_CODE', 'That code is not valid. Try the latest code.');
+    const factor = await this.prisma.mfaFactor.findUnique({
+      where: { userId_type: { userId, type: 'totp' } },
+    });
+    if (!factor)
+      throw AppError.badRequest('MFA_NOT_ENABLED', 'Start two-step verification setup first.');
+    if (factor.confirmedAt)
+      throw AppError.conflict('MFA_ALREADY_ENABLED', 'Two-step verification is already enabled.');
+    const step = verifyTotp(
+      decryptSecret(factor.secretEncrypted, this.config.auth.mfaEncryptionKey),
+      code,
+    );
+    if (step === null)
+      throw AppError.badRequest('INVALID_MFA_CODE', 'That code is not valid. Try the latest code.');
     await this.prisma.$transaction(async (tx) => {
       await tx.mfaFactor.update({
         where: { id: factor.id },
         data: { confirmedAt: new Date(), lastUsedStep: BigInt(step) },
       });
-      await this.audit.record({ action: 'auth.mfa.enabled', actorId: userId, targetType: 'user', targetId: userId }, meta, tx);
+      await this.audit.record(
+        { action: 'auth.mfa.enabled', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+        tx,
+      );
     });
   }
 
-  async disable(userId: string, input: { password?: string; code: string }, meta: RequestMeta): Promise<void> {
+  async disable(
+    userId: string,
+    input: { password?: string; code: string },
+    meta: RequestMeta,
+  ): Promise<void> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
     if (user.passwordHash) {
       if (!input.password || !(await this.passwords.verify(user.passwordHash, input.password))) {
@@ -72,7 +90,11 @@ export class MfaService {
     await this.verifyCode(userId, input.code, meta);
     await this.prisma.$transaction(async (tx) => {
       await tx.mfaFactor.deleteMany({ where: { userId, type: 'totp' } });
-      await this.audit.record({ action: 'auth.mfa.disabled', actorId: userId, targetType: 'user', targetId: userId }, meta, tx);
+      await this.audit.record(
+        { action: 'auth.mfa.disabled', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+        tx,
+      );
     });
   }
 
@@ -80,17 +102,28 @@ export class MfaService {
    * Verify a TOTP code for a confirmed factor, enforcing replay protection atomically: the stored
    * last-used step only advances if no concurrent request already used this (or a later) step.
    */
-  async verifyCode(userId: string, code: string, meta: RequestMeta, challengeId?: string): Promise<void> {
+  async verifyCode(
+    userId: string,
+    code: string,
+    meta: RequestMeta,
+    challengeId?: string,
+  ): Promise<void> {
     if (challengeId) {
       const key = `mfa:attempts:${challengeId}`;
       const attempts = await this.redis.client.incr(key);
       if (attempts === 1) await this.redis.client.expire(key, 600);
       if (attempts > MAX_CHALLENGE_ATTEMPTS) {
-        throw AppError.unauthorized('INVALID_TOKEN', 'Too many incorrect codes. Please sign in again.');
+        throw AppError.unauthorized(
+          'INVALID_TOKEN',
+          'Too many incorrect codes. Please sign in again.',
+        );
       }
     }
-    const factor = await this.prisma.mfaFactor.findUnique({ where: { userId_type: { userId, type: 'totp' } } });
-    if (!factor?.confirmedAt) throw AppError.badRequest('MFA_NOT_ENABLED', 'Two-step verification is not enabled.');
+    const factor = await this.prisma.mfaFactor.findUnique({
+      where: { userId_type: { userId, type: 'totp' } },
+    });
+    if (!factor?.confirmedAt)
+      throw AppError.badRequest('MFA_NOT_ENABLED', 'Two-step verification is not enabled.');
 
     const lastUsedStep = factor.lastUsedStep === null ? null : Number(factor.lastUsedStep);
     const secret = decryptSecret(factor.secretEncrypted, this.config.auth.mfaEncryptionKey);
@@ -108,8 +141,14 @@ export class MfaService {
       ).count === 1;
 
     if (!accepted) {
-      await this.audit.record({ action: 'auth.mfa.failure', actorId: userId, targetType: 'user', targetId: userId }, meta);
-      throw AppError.unauthorized('INVALID_MFA_CODE', 'That code is not valid. Try the latest code.');
+      await this.audit.record(
+        { action: 'auth.mfa.failure', actorId: userId, targetType: 'user', targetId: userId },
+        meta,
+      );
+      throw AppError.unauthorized(
+        'INVALID_MFA_CODE',
+        'That code is not valid. Try the latest code.',
+      );
     }
   }
 }

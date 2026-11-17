@@ -36,7 +36,10 @@ export class AuthzCacheService {
     let cachedUser: CachedUser | null = null;
     let sessionActive: boolean | null = null;
     try {
-      const [userJson, sessionFlag] = await this.redis.client.mget(userKey(userId), sessionKey(sessionId));
+      const [userJson, sessionFlag] = await this.redis.client.mget(
+        userKey(userId),
+        sessionKey(sessionId),
+      );
       cachedUser = userJson ? (JSON.parse(userJson) as CachedUser) : null;
       sessionActive = sessionFlag === null ? null : sessionFlag === '1';
     } catch (error) {
@@ -48,7 +51,11 @@ export class AuthzCacheService {
         where: { id: sessionId },
         select: { userId: true, revokedAt: true, expiresAt: true },
       });
-      sessionActive = !!session && session.userId === userId && !session.revokedAt && session.expiresAt > new Date();
+      sessionActive =
+        !!session &&
+        session.userId === userId &&
+        !session.revokedAt &&
+        session.expiresAt > new Date();
       await this.set(sessionKey(sessionId), sessionActive ? '1' : '0');
     }
     if (!sessionActive) return null;
@@ -56,7 +63,11 @@ export class AuthzCacheService {
     if (!cachedUser) {
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
-        select: { status: true, emailVerifiedAt: true, roles: { select: { role: { select: { key: true } } } } },
+        select: {
+          status: true,
+          emailVerifiedAt: true,
+          roles: { select: { role: { select: { key: true } } } },
+        },
       });
       if (!user) return null;
       cachedUser = {

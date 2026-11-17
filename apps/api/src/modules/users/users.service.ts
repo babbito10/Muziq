@@ -36,12 +36,22 @@ export class UsersService {
     return loadCurrentUser(this.prisma, userId);
   }
 
-  async updateProfile(userId: string, input: UpdateProfileInput, meta: RequestMeta): Promise<CurrentUser> {
+  async updateProfile(
+    userId: string,
+    input: UpdateProfileInput,
+    meta: RequestMeta,
+  ): Promise<CurrentUser> {
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.userProfile.update({ where: { userId }, data: input });
         await this.audit.record(
-          { action: 'user.profile.updated', actorId: userId, targetType: 'user', targetId: userId, metadata: { fields: Object.keys(input) } },
+          {
+            action: 'user.profile.updated',
+            actorId: userId,
+            targetType: 'user',
+            targetId: userId,
+            metadata: { fields: Object.keys(input) },
+          },
           meta,
           tx,
         );
@@ -72,18 +82,33 @@ export class UsersService {
    * Add a self-service capability role (artist, producer, dj, business, educator). Creator
    * capabilities unlock uploads and payouts later, so a verified email is required.
    */
-  async addCapability(userId: string, role: CapabilityRole, meta: RequestMeta): Promise<CurrentUser> {
+  async addCapability(
+    userId: string,
+    role: CapabilityRole,
+    meta: RequestMeta,
+  ): Promise<CurrentUser> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
     if (!user.emailVerifiedAt) {
-      throw AppError.forbidden('Verify your email address before adding creator capabilities.', 'EMAIL_NOT_VERIFIED');
+      throw AppError.forbidden(
+        'Verify your email address before adding creator capabilities.',
+        'EMAIL_NOT_VERIFIED',
+      );
     }
     const roleId = await this.roles.idFor(role);
     await this.prisma.$transaction(async (tx) => {
-      const existing = await tx.userRole.findUnique({ where: { userId_roleId: { userId, roleId } } });
+      const existing = await tx.userRole.findUnique({
+        where: { userId_roleId: { userId, roleId } },
+      });
       if (existing) return;
       await tx.userRole.create({ data: { userId, roleId, grantedById: userId } });
       await this.audit.record(
-        { action: 'user.capability.added', actorId: userId, targetType: 'user', targetId: userId, metadata: { role } },
+        {
+          action: 'user.capability.added',
+          actorId: userId,
+          targetType: 'user',
+          targetId: userId,
+          metadata: { role },
+        },
         meta,
         tx,
       );
@@ -92,13 +117,23 @@ export class UsersService {
     return this.me(userId);
   }
 
-  async removeCapability(userId: string, role: CapabilityRole, meta: RequestMeta): Promise<CurrentUser> {
+  async removeCapability(
+    userId: string,
+    role: CapabilityRole,
+    meta: RequestMeta,
+  ): Promise<CurrentUser> {
     const roleId = await this.roles.idFor(role);
     await this.prisma.$transaction(async (tx) => {
       const { count } = await tx.userRole.deleteMany({ where: { userId, roleId } });
       if (count > 0) {
         await this.audit.record(
-          { action: 'user.capability.removed', actorId: userId, targetType: 'user', targetId: userId, metadata: { role } },
+          {
+            action: 'user.capability.removed',
+            actorId: userId,
+            targetType: 'user',
+            targetId: userId,
+            metadata: { role },
+          },
           meta,
           tx,
         );
@@ -109,24 +144,43 @@ export class UsersService {
   }
 
   /** Deactivate now; personal data is anonymised after the grace period by `purgeExpiredDeletions`. */
-  async scheduleDeletion(userId: string, input: DeleteAccountInput, meta: RequestMeta): Promise<void> {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { profile: true } });
+  async scheduleDeletion(
+    userId: string,
+    input: DeleteAccountInput,
+    meta: RequestMeta,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { profile: true },
+    });
     if (user.passwordHash) {
       if (!input.password || !(await this.passwords.verify(user.passwordHash, input.password))) {
         throw AppError.unauthorized('INVALID_CREDENTIALS', 'Your password is incorrect.');
       }
     }
     await this.prisma.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: userId }, data: { status: 'pending_deletion', deletedAt: new Date() } });
+      await tx.user.update({
+        where: { id: userId },
+        data: { status: 'pending_deletion', deletedAt: new Date() },
+      });
       await this.audit.record(
-        { action: 'user.deletion.scheduled', actorId: userId, targetType: 'user', targetId: userId, metadata: { graceDays: DELETION_GRACE_DAYS } },
+        {
+          action: 'user.deletion.scheduled',
+          actorId: userId,
+          targetType: 'user',
+          targetId: userId,
+          metadata: { graceDays: DELETION_GRACE_DAYS },
+        },
         meta,
         tx,
       );
     });
     await this.sessions.revokeAllForUser(userId, 'account_deleted');
     await this.authz.invalidateUser(userId);
-    await this.mail.send({ to: user.email, ...accountDeletionEmail(user.profile?.displayName ?? 'there') });
+    await this.mail.send({
+      to: user.email,
+      ...accountDeletionEmail(user.profile?.displayName ?? 'there'),
+    });
   }
 
   /**
@@ -153,14 +207,25 @@ export class UsersService {
         });
         await tx.userProfile.update({
           where: { userId: id },
-          data: { displayName: 'Deleted user', username: null, avatarUrl: null, bio: null, countryCode: null, preferences: {} },
+          data: {
+            displayName: 'Deleted user',
+            username: null,
+            avatarUrl: null,
+            bio: null,
+            countryCode: null,
+            preferences: {},
+          },
         });
         await tx.oAuthAccount.deleteMany({ where: { userId: id } });
         await tx.mfaFactor.deleteMany({ where: { userId: id } });
         await tx.verificationToken.deleteMany({ where: { userId: id } });
         await tx.session.deleteMany({ where: { userId: id } });
         await tx.userRole.deleteMany({ where: { userId: id } });
-        await this.audit.record({ action: 'user.anonymised', targetType: 'user', targetId: id }, {}, tx);
+        await this.audit.record(
+          { action: 'user.anonymised', targetType: 'user', targetId: id },
+          {},
+          tx,
+        );
       });
     }
     return due.length;

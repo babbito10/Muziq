@@ -20,7 +20,11 @@ export function PreferencesSection() {
   if (!user) return null;
   const prefs = user.preferences;
 
-  async function update(patch: Partial<Omit<UserPreferences, 'emailNotifications'>> & { emailNotifications?: Partial<UserPreferences['emailNotifications']> }) {
+  async function update(
+    patch: Partial<Omit<UserPreferences, 'emailNotifications'>> & {
+      emailNotifications?: Partial<UserPreferences['emailNotifications']>;
+    },
+  ) {
     setError(null);
     setPending(true);
     try {
@@ -35,7 +39,11 @@ export function PreferencesSection() {
   return (
     <Card>
       <CardHeader title="Preferences" />
-      {error && <Alert tone="danger" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert tone="danger" className="mb-4">
+          {error}
+        </Alert>
+      )}
       <fieldset className="mb-6" disabled={pending}>
         <legend className="mb-2 text-sm font-medium text-fg">Theme</legend>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Theme">
@@ -59,10 +67,26 @@ export function PreferencesSection() {
       </fieldset>
       <fieldset className="flex flex-col gap-3" disabled={pending}>
         <legend className="mb-2 text-sm font-medium text-fg">Content and email</legend>
-        <Checkbox label="Show explicit content" checked={prefs.explicitContent} onChange={(e) => update({ explicitContent: e.target.checked })} />
-        <Checkbox label="Product news and tips" checked={prefs.emailNotifications.product} onChange={(e) => update({ emailNotifications: { product: e.target.checked } })} />
-        <Checkbox label="Social activity (follows, comments)" checked={prefs.emailNotifications.social} onChange={(e) => update({ emailNotifications: { social: e.target.checked } })} />
-        <Checkbox label="Security alerts (recommended)" checked={prefs.emailNotifications.security} onChange={(e) => update({ emailNotifications: { security: e.target.checked } })} />
+        <Checkbox
+          label="Show explicit content"
+          checked={prefs.explicitContent}
+          onChange={(e) => update({ explicitContent: e.target.checked })}
+        />
+        <Checkbox
+          label="Product news and tips"
+          checked={prefs.emailNotifications.product}
+          onChange={(e) => update({ emailNotifications: { product: e.target.checked } })}
+        />
+        <Checkbox
+          label="Social activity (follows, comments)"
+          checked={prefs.emailNotifications.social}
+          onChange={(e) => update({ emailNotifications: { social: e.target.checked } })}
+        />
+        <Checkbox
+          label="Security alerts (recommended)"
+          checked={prefs.emailNotifications.security}
+          onChange={(e) => update({ emailNotifications: { security: e.target.checked } })}
+        />
       </fieldset>
     </Card>
   );

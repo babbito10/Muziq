@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  quality:
+    name: Build, lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm turbo run build lint typecheck
+      # API tests need PostgreSQL + Redis and run in the `api` job.
+      - run: pnpm turbo run test --filter='!@musicverse/api'
+      - run: pnpm --filter @musicverse/api exec jest --selectProjects unit
+
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Accepted exceptions live in pnpm-workspace.yaml (auditConfig) and are justified in SECURITY.md.
+      - run: pnpm audit --prod --audit-level high
+
+  api:
+    name: API integration tests (PostgreSQL + Redis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: musicverse
+          POSTGRES_PASSWORD: musicverse
+          POSTGRES_DB: musicverse_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U musicverse" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://musicverse:musicverse@localhost:5432/musicverse_test?schema=public
+      TEST_REDIS_URL: redis://localhost:6379/15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter='@musicverse/api^...'
+      - name: Create a throwaway shadow database for schema drift detection
+        run: psql "postgresql://musicverse:musicverse@localhost:5432/musicverse_test" -c "CREATE DATABASE musicverse_shadow"
+      - name: Fail if schema.prisma has changes without a migration
+        working-directory: apps/api
+        run: >-
+          npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma
+          --shadow-database-url "postgresql://musicverse:musicverse@localhost:5432/musicverse_shadow" --exit-code
+      - run: pnpm --filter @musicverse/api test
+
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: musicverse
+          POSTGRES_PASSWORD: musicverse
+          POSTGRES_DB: musicverse_e2e
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U musicverse" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports: ['1025:1025', '8025:8025']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@musicverse/api --filter=@musicverse/web
+      - run: pnpm --filter @musicverse/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @musicverse/web test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - run: docker build -f infrastructure/docker/api.Dockerfile -t musicverse-api:ci .
+      - run: docker build -f infrastructure/docker/next-app.Dockerfile --build-arg APP=web -t musicverse-web:ci .
+      - run: docker build -f infrastructure/docker/next-app.Dockerfile --build-arg APP=admin -t musicverse-admin:ci .
+
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - run: terraform fmt -check -recursive infrastructure/terraform
+      - name: Validate each environment (no backend, no credentials)
+        run: |
+          for env in dev staging prod; do
+            terraform -chdir=infrastructure/terraform/environments/$env init -backend=false -input=false
+            terraform -chdir=infrastructure/terraform/environments/$env validate
+          done

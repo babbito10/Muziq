@@ -8,7 +8,15 @@ import { useAuth } from '@/lib/auth-context';
 import { PRIMARY_NAV, type NavItem } from '@/lib/navigation';
 import { Icon } from './Icon';
 
-function NavEntry({ item, active, compact = false }: { item: NavItem; active: boolean; compact?: boolean }) {
+function NavEntry({
+  item,
+  active,
+  compact = false,
+}: {
+  item: NavItem;
+  active: boolean;
+  compact?: boolean;
+}) {
   const base = compact
     ? 'flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium'
     : 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium';
@@ -91,7 +99,8 @@ function AccountControls() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isActive = (item: NavItem) => (item.href === '/' ? pathname === '/' : pathname.startsWith(item.href));
+  const isActive = (item: NavItem) =>
+    item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
 
   return (
     <div className="flex min-h-dvh">

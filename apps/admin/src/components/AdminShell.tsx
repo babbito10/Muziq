@@ -24,7 +24,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
   if (status !== 'authenticated' || !user) {
     return (
       <LoadingRegion label="Loading admin console">
-        <div className="p-8"><Skeleton className="h-64 w-full" /></div>
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
       </LoadingRegion>
     );
   }
@@ -40,13 +42,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <nav aria-label="Admin">
             <ul className="flex gap-1">
               {NAV.filter((n) => can(n.permission)).map((n) => {
-                const active = n.href === '/' ? pathname === '/' || pathname.startsWith('/users') : pathname.startsWith(n.href);
+                const active =
+                  n.href === '/'
+                    ? pathname === '/' || pathname.startsWith('/users')
+                    : pathname.startsWith(n.href);
                 return (
                   <li key={n.href}>
                     <Link
                       href={n.href}
                       aria-current={active ? 'page' : undefined}
-                      className={cn('rounded-lg px-3 py-1.5 text-sm', active ? 'bg-surface-raised text-fg' : 'text-fg-muted hover:text-fg')}
+                      className={cn(
+                        'rounded-lg px-3 py-1.5 text-sm',
+                        active ? 'bg-surface-raised text-fg' : 'text-fg-muted hover:text-fg',
+                      )}
                     >
                       {n.label}
                     </Link>
@@ -58,15 +66,28 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-fg-muted">{user.email}</span>
-          {user.roles.filter((r) => ['moderator', 'admin', 'super_admin'].includes(r)).map((r) => (
-            <Badge key={r} tone="accent">{r}</Badge>
-          ))}
-          <Button size="sm" variant="ghost" onClick={async () => { await logout(); router.replace('/login'); }}>
+          {user.roles
+            .filter((r) => ['moderator', 'admin', 'super_admin'].includes(r))
+            .map((r) => (
+              <Badge key={r} tone="accent">
+                {r}
+              </Badge>
+            ))}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={async () => {
+              await logout();
+              router.replace('/login');
+            }}
+          >
             Sign out
           </Button>
         </div>
       </header>
-      <main id="main" className="mx-auto max-w-6xl p-6">{children}</main>
+      <main id="main" className="mx-auto max-w-6xl p-6">
+        {children}
+      </main>
     </div>
   );
 }

@@ -2,7 +2,10 @@ import { isApiError } from '@musicverse/api-client';
 import { fieldErrors } from '@musicverse/validation';
 
 /** Human-readable message for any error thrown by the API client. */
-export function errorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+export function errorMessage(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+): string {
   if (isApiError(error)) return error.message;
   return fallback;
 }

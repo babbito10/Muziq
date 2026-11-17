@@ -41,22 +41,61 @@ export default function SignIn() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ padding: spacing(6), gap: spacing(4) }} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ padding: spacing(6), gap: spacing(4) }}
+          keyboardShouldPersistTaps="handled"
+        >
           <Heading>{mfaToken ? 'Two-step verification' : 'Welcome back'}</Heading>
-          <Body muted>{mfaToken ? 'Enter the 6-digit code from your authenticator app.' : 'Sign in to MusicVerse.'}</Body>
+          <Body muted>
+            {mfaToken
+              ? 'Enter the 6-digit code from your authenticator app.'
+              : 'Sign in to MusicVerse.'}
+          </Body>
           {formError ? <Banner tone="danger">{formError}</Banner> : null}
           {mfaToken ? (
-            <Field label="Authentication code" value={code} onChangeText={(t) => setCode(t.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={6} textContentType="oneTimeCode" autoFocus error={errors.code} />
+            <Field
+              label="Authentication code"
+              value={code}
+              onChangeText={(t) => setCode(t.replace(/\D/g, ''))}
+              keyboardType="number-pad"
+              maxLength={6}
+              textContentType="oneTimeCode"
+              autoFocus
+              error={errors.code}
+            />
           ) : (
             <>
-              <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="emailAddress" error={errors.email} />
-              <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" textContentType="password" error={errors.password} />
+              <Field
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                error={errors.email}
+              />
+              <Field
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoComplete="password"
+                textContentType="password"
+                error={errors.password}
+              />
             </>
           )}
           <PrimaryButton title={mfaToken ? 'Verify' : 'Sign in'} loading={busy} onPress={submit} />
           {!mfaToken && (
-            <Link href="/(auth)/sign-up" style={{ color: colors.primary, textAlign: 'center', padding: spacing(2) }}>
+            <Link
+              href="/(auth)/sign-up"
+              style={{ color: colors.primary, textAlign: 'center', padding: spacing(2) }}
+            >
               <Text>New here? Create an account</Text>
             </Link>
           )}

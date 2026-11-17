@@ -17,7 +17,12 @@ function options(config: AppConfig, maxAgeMs?: number): CookieOptions {
   };
 }
 
-export function setRefreshCookie(res: Response, config: AppConfig, clientType: ClientType, token: string): void {
+export function setRefreshCookie(
+  res: Response,
+  config: AppConfig,
+  clientType: ClientType,
+  token: string,
+): void {
   const name = cookieName(clientType);
   if (name) res.cookie(name, token, options(config, config.auth.refreshTtlDays * 86_400_000));
 }

@@ -1,5 +1,9 @@
 import { createApiClient } from '@musicverse/api-client';
-import { createSecureTokenStore, REFRESH_TOKEN_KEY, type SecureStorage } from './secure-token-store';
+import {
+  createSecureTokenStore,
+  REFRESH_TOKEN_KEY,
+  type SecureStorage,
+} from './secure-token-store';
 
 function fakeStorage(): SecureStorage & { data: Map<string, string> } {
   const data = new Map<string, string>();
@@ -40,7 +44,10 @@ describe('secure token store', () => {
       tokenStore: createSecureTokenStore(storage),
       fetch: (async (_url: string, init: RequestInit) => {
         calls.push(JSON.parse(init.body as string));
-        return new Response(JSON.stringify({ accessToken: 'A', refreshToken: 'N'.repeat(43), expiresIn: 900 }), { status: 200 });
+        return new Response(
+          JSON.stringify({ accessToken: 'A', refreshToken: 'N'.repeat(43), expiresIn: 900 }),
+          { status: 200 },
+        );
       }) as unknown as typeof fetch,
     });
     await expect(client.auth.refresh()).resolves.toBe(true);

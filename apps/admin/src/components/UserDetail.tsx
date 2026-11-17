@@ -3,7 +3,16 @@
 import { canManageRole, ROLE_DEFINITIONS } from '@musicverse/auth';
 import type { AdminUserDetail } from '@musicverse/types';
 import { ROLE_KEYS } from '@musicverse/types';
-import { Alert, Badge, Button, Card, CardHeader, LoadingRegion, Skeleton, TextField } from '@musicverse/ui';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  LoadingRegion,
+  Skeleton,
+  TextField,
+} from '@musicverse/ui';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
@@ -42,7 +51,13 @@ export function UserDetail({ id }: { id: string }) {
   }
 
   if (!user) {
-    return error ? <Alert tone="danger">{error}</Alert> : <LoadingRegion><Skeleton className="h-64" /></LoadingRegion>;
+    return error ? (
+      <Alert tone="danger">{error}</Alert>
+    ) : (
+      <LoadingRegion>
+        <Skeleton className="h-64" />
+      </LoadingRegion>
+    );
   }
 
   const isSelf = me?.id === user.id;
@@ -50,7 +65,9 @@ export function UserDetail({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/" className="text-sm text-primary hover:underline">← All users</Link>
+      <Link href="/" className="text-sm text-primary hover:underline">
+        ← All users
+      </Link>
       <header>
         <h1 className="text-2xl font-bold">{user.displayName || user.email}</h1>
         <p className="text-fg-muted">{user.email}</p>
@@ -61,7 +78,12 @@ export function UserDetail({ id }: { id: string }) {
         <CardHeader title="Overview" />
         <dl className="grid gap-4 text-sm sm:grid-cols-3">
           {[
-            ['Status', <Badge key="s" tone={user.status === 'active' ? 'success' : 'danger'}>{user.status}</Badge>],
+            [
+              'Status',
+              <Badge key="s" tone={user.status === 'active' ? 'success' : 'danger'}>
+                {user.status}
+              </Badge>,
+            ],
             ['Email', user.emailVerified ? 'Verified' : 'Not verified'],
             ['Two-step verification', user.mfaEnabled ? 'On' : 'Off'],
             ['Active sessions', String(user.activeSessions)],
@@ -78,11 +100,19 @@ export function UserDetail({ id }: { id: string }) {
       </Card>
 
       <Card>
-        <CardHeader title="Roles" description="Grants and revocations take effect immediately and are audit-logged." />
+        <CardHeader
+          title="Roles"
+          description="Grants and revocations take effect immediately and are audit-logged."
+        />
         <ul className="divide-y divide-border">
           {manageableRoles.map((role) => {
             const has = user.roles.includes(role);
-            const decision = canManageRole({ actorRoles: me?.roles ?? [], role, action: has ? 'revoke' : 'grant', isSelf });
+            const decision = canManageRole({
+              actorRoles: me?.roles ?? [],
+              role,
+              action: has ? 'revoke' : 'grant',
+              isSelf,
+            });
             return (
               <li key={role} className="flex items-center justify-between gap-4 py-3">
                 <div>
@@ -99,7 +129,13 @@ export function UserDetail({ id }: { id: string }) {
                     variant={has ? 'secondary' : 'primary'}
                     loading={busy === role}
                     aria-label={`${has ? 'Revoke' : 'Grant'} ${ROLE_DEFINITIONS[role].name}`}
-                    onClick={() => run(role, () => (has ? api.admin.revokeRole(user.id, role) : api.admin.grantRole(user.id, { role })))}
+                    onClick={() =>
+                      run(role, () =>
+                        has
+                          ? api.admin.revokeRole(user.id, role)
+                          : api.admin.grantRole(user.id, { role }),
+                      )
+                    }
                   >
                     {has ? 'Revoke' : 'Grant'}
                   </Button>
@@ -114,19 +150,37 @@ export function UserDetail({ id }: { id: string }) {
         <Card className={user.status === 'suspended' ? '' : 'border-danger/40'}>
           {user.status === 'suspended' ? (
             <>
-              <CardHeader title="Suspended" description="The user cannot sign in until reinstated." />
-              <Button loading={busy === 'reinstate'} onClick={() => run('reinstate', () => api.admin.reinstate(user.id))}>Reinstate</Button>
+              <CardHeader
+                title="Suspended"
+                description="The user cannot sign in until reinstated."
+              />
+              <Button
+                loading={busy === 'reinstate'}
+                onClick={() => run('reinstate', () => api.admin.reinstate(user.id))}
+              >
+                Reinstate
+              </Button>
             </>
           ) : (
             <>
-              <CardHeader title="Suspend account" description="Signs the user out everywhere and blocks sign-in." />
+              <CardHeader
+                title="Suspend account"
+                description="Signs the user out everywhere and blocks sign-in."
+              />
               <div className="flex flex-wrap items-end gap-3">
-                <TextField label="Reason (recorded in the audit log)" value={reason} onChange={(e) => setReason(e.target.value)} className="min-w-72 flex-1" />
+                <TextField
+                  label="Reason (recorded in the audit log)"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="min-w-72 flex-1"
+                />
                 <Button
                   variant="danger"
                   disabled={reason.trim().length < 3}
                   loading={busy === 'suspend'}
-                  onClick={() => run('suspend', () => api.admin.suspend(user.id, { reason: reason.trim() }))}
+                  onClick={() =>
+                    run('suspend', () => api.admin.suspend(user.id, { reason: reason.trim() }))
+                  }
                 >
                   Suspend
                 </Button>

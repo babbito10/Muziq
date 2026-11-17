@@ -5,7 +5,10 @@ export default [
   ...react,
   {
     plugins: { '@next/next': nextPlugin },
-    rules: { ...nextPlugin.configs.recommended.rules, ...nextPlugin.configs['core-web-vitals'].rules },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
+    },
   },
   { ignores: ['.next/**', 'playwright-report/**', 'test-results/**'] },
 ];

@@ -19,7 +19,13 @@ export function initials(name: string): string {
 
 export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   if (src) {
-    return <img src={src} alt={name} className={cn('rounded-full object-cover', sizes[size], className)} />;
+    return (
+      <img
+        src={src}
+        alt={name}
+        className={cn('rounded-full object-cover', sizes[size], className)}
+      />
+    );
   }
   return (
     <span

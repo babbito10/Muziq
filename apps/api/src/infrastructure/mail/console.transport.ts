@@ -15,11 +15,15 @@ export class ConsoleMailTransport implements MailTransport {
   async send(message: MailMessage & { from: string }): Promise<void> {
     this.outbox.push({ ...message, sentAt: new Date() });
     if (this.outbox.length > ConsoleMailTransport.OUTBOX_LIMIT) this.outbox.shift();
-    this.logger.log(`[NOT SENT] ${message.template} → ${message.to}: ${message.subject}\n${message.text}`);
+    this.logger.log(
+      `[NOT SENT] ${message.template} → ${message.to}: ${message.subject}\n${message.text}`,
+    );
   }
 
   /** Most recent message to `to` (optionally for a template). Used by tests. */
   latest(to: string, template?: string) {
-    return [...this.outbox].reverse().find((m) => m.to === to && (!template || m.template === template));
+    return [...this.outbox]
+      .reverse()
+      .find((m) => m.to === to && (!template || m.template === template));
   }
 }
