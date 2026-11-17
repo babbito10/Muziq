@@ -41,3 +41,4 @@ service-account*.json
 .vscode/*
 !.vscode/extensions.json
 *.log
+.preview/
