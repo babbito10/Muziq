@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "MusicVerse accessible React component library and design tokens",
-  "sideEffects": ["*.css"],
+  "sideEffects": [
+    "*.css"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -14,9 +16,18 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./classes": {
+      "types": "./dist/classes.d.ts",
+      "import": "./dist/classes.js",
+      "require": "./dist/classes.cjs"
+    },
     "./styles.css": "./styles.css"
   },
-  "files": ["dist", "src", "styles.css"],
+  "files": [
+    "dist",
+    "src",
+    "styles.css"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

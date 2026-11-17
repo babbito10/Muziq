@@ -30,7 +30,7 @@ export function Alert({ tone = 'info', title, children, action, className }: Ale
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className={cn(title && 'mt-0.5', 'text-fg-muted')}>{children}</div>}
       </div>
-      {action}
+      {action && <div className="shrink-0 whitespace-nowrap">{action}</div>}
     </div>
   );
 }

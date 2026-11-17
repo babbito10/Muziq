@@ -1,0 +1,10 @@
+{
+  "extends": "@musicverse/shared-config/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "types": ["jest", "@testing-library/jest-dom", "node"]
+  },
+  "include": ["next-env.d.ts", "src", "e2e", "playwright.config.ts", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
