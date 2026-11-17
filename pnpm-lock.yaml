@@ -18,6 +18,88 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  apps/admin:
+    dependencies:
+      '@fontsource-variable/inter':
+        specifier: ^5.2.8
+        version: 5.3.0
+      '@musicverse/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@musicverse/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@musicverse/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@musicverse/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@musicverse/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
+      next:
+        specifier: 15.5.6
+        version: 15.5.6(@babel/core@7.29.13)(@playwright/test@1.63.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@musicverse/shared-config':
+        specifier: workspace:*
+        version: link:../../packages/shared-config
+      '@next/eslint-plugin-next':
+        specifier: 15.5.6
+        version: 15.5.6
+      '@tailwindcss/postcss':
+        specifier: ^4.1.14
+        version: 4.3.5
+      '@testing-library/jest-dom':
+        specifier: ^6.9.1
+        version: 6.10.0(@testing-library/dom@10.4.2)
+      '@testing-library/react':
+        specifier: ^16.3.0
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@testing-library/user-event':
+        specifier: ^14.6.1
+        version: 14.6.12(@testing-library/dom@10.4.2)
+      '@types/jest':
+        specifier: ^29.5.14
+        version: 29.5.14
+      '@types/node':
+        specifier: ^22.18.0
+        version: 22.20.5
+      '@types/react':
+        specifier: ^19.1.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.1.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^9.39.0
+        version: 9.39.5(jiti@2.7.0)
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.20.5)
+      jest-environment-jsdom:
+        specifier: ^29.7.0
+        version: 29.7.0
+      tailwindcss:
+        specifier: ^4.1.14
+        version: 4.3.5
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.15(@babel/core@7.29.13)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.29.13))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.20.5))(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   apps/api:
     dependencies:
       '@musicverse/auth':

@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+@import '@musicverse/ui/styles.css';
+@import '@fontsource-variable/inter';
+
+@source '../';
+
+:root {
+  --mv-font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --mv-font-display: var(--mv-font-sans);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  min-height: 100dvh;
+}
