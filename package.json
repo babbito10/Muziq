@@ -1,0 +1,32 @@
+{
+  "name": "musicverse",
+  "private": true,
+  "description": "MusicVerse — One world. Every sound. Endless possibilities.",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter=./packages/*",
+    "dev": "turbo run dev --parallel --filter=@musicverse/api --filter=@musicverse/web",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter @musicverse/web test:e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "pnpm --filter @musicverse/api db:migrate",
+    "db:deploy": "pnpm --filter @musicverse/api db:deploy",
+    "db:seed": "pnpm --filter @musicverse/api db:seed",
+    "db:reset": "pnpm --filter @musicverse/api db:reset",
+    "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.8",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/dist
+**/.next
+**/coverage
+**/.turbo
+apps/api/prisma/migrations
+apps/mobile/.expo
+*.md

@@ -1,0 +1,111 @@
+/*
+ * MusicVerse design tokens (Tailwind CSS v4).
+ * Import from an app stylesheet AFTER `@import "tailwindcss";`:
+ *   @import "@musicverse/ui/styles.css";
+ * Dark is the default theme; set data-theme="light" on <html> for the light theme.
+ */
+@source "./src";
+
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+:root {
+  color-scheme: dark;
+  --mv-bg: #0a0f1e;            /* deep navy */
+  --mv-bg-elevated: #0f1629;
+  --mv-surface: #151b2e;       /* charcoal navy */
+  --mv-surface-raised: #1c2339;
+  --mv-surface-hover: #242c45;
+  --mv-border: #2a3350;
+  --mv-border-strong: #3a4566;
+  --mv-text: #eef1f8;
+  --mv-text-muted: #a3acc4;    /* ≥ 7:1 on bg */
+  --mv-text-subtle: #8690ab;   /* ≥ 4.5:1 on bg */
+  --mv-primary: #2dd4bf;       /* teal */
+  --mv-primary-hover: #5eead4;
+  --mv-primary-contrast: #042f2e;
+  --mv-accent: #a78bfa;        /* violet */
+  --mv-accent-hover: #c4b5fd;
+  --mv-accent-contrast: #1e1045;
+  --mv-danger: #f87171;
+  --mv-danger-contrast: #2b0909;
+  --mv-success: #4ade80;
+  --mv-warning: #fbbf24;
+  --mv-focus: #5eead4;
+  --mv-gradient: linear-gradient(135deg, #2dd4bf 0%, #8b5cf6 100%);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --mv-bg: #f6f7fb;
+  --mv-bg-elevated: #ffffff;
+  --mv-surface: #ffffff;
+  --mv-surface-raised: #f0f2f8;
+  --mv-surface-hover: #e6e9f2;
+  --mv-border: #d7dbe7;
+  --mv-border-strong: #b7bdd0;
+  --mv-text: #0d1326;
+  --mv-text-muted: #424a63;
+  --mv-text-subtle: #5b6480;
+  --mv-primary: #0f766e;
+  --mv-primary-hover: #115e59;
+  --mv-primary-contrast: #ffffff;
+  --mv-accent: #6d28d9;
+  --mv-accent-hover: #5b21b6;
+  --mv-accent-contrast: #ffffff;
+  --mv-danger: #b91c1c;
+  --mv-danger-contrast: #ffffff;
+  --mv-success: #15803d;
+  --mv-warning: #a16207;
+  --mv-focus: #0f766e;
+}
+
+@theme inline {
+  --color-bg: var(--mv-bg);
+  --color-bg-elevated: var(--mv-bg-elevated);
+  --color-surface: var(--mv-surface);
+  --color-surface-raised: var(--mv-surface-raised);
+  --color-surface-hover: var(--mv-surface-hover);
+  --color-border: var(--mv-border);
+  --color-border-strong: var(--mv-border-strong);
+  --color-fg: var(--mv-text);
+  --color-fg-muted: var(--mv-text-muted);
+  --color-fg-subtle: var(--mv-text-subtle);
+  --color-primary: var(--mv-primary);
+  --color-primary-hover: var(--mv-primary-hover);
+  --color-primary-contrast: var(--mv-primary-contrast);
+  --color-accent: var(--mv-accent);
+  --color-accent-hover: var(--mv-accent-hover);
+  --color-accent-contrast: var(--mv-accent-contrast);
+  --color-danger: var(--mv-danger);
+  --color-danger-contrast: var(--mv-danger-contrast);
+  --color-success: var(--mv-success);
+  --color-warning: var(--mv-warning);
+  --color-focus: var(--mv-focus);
+  --font-sans: var(--mv-font-sans, 'Inter', ui-sans-serif, system-ui, sans-serif);
+  --font-display: var(--mv-font-display, 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif);
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    background-color: var(--mv-bg);
+    color: var(--mv-text);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--mv-focus);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility bg-brand-gradient {
+  background-image: var(--mv-gradient);
+}

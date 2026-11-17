@@ -1,0 +1,30 @@
+{
+  "name": "@musicverse/shared-config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript, ESLint and Jest configuration for MusicVerse",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/library.json": "./tsconfig/library.json",
+    "./tsconfig/react-library.json": "./tsconfig/react-library.json",
+    "./tsconfig/nestjs.json": "./tsconfig/nestjs.json",
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
+    "./eslint": "./eslint.config.mjs",
+    "./jest": "./jest.preset.cjs"
+  },
+  "scripts": {
+    "lint": "echo 'shared-config: nothing to lint'",
+    "typecheck": "echo 'shared-config: nothing to typecheck'",
+    "test": "echo 'shared-config: no tests'"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.4.0",
+    "typescript-eslint": "^8.46.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0"
+  }
+}

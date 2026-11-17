@@ -1,0 +1,43 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+coverage/
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+
+# test output
+playwright-report/
+test-results/
+blob-report/
+
+# env & secrets — never commit real secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+
+# terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+
+# os/editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
