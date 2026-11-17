@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "MusicVerse",
+    "slug": "musicverse",
+    "scheme": "musicverse",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0f1e",
+    "ios": { "bundleIdentifier": "app.musicverse.ios", "supportsTablet": true },
+    "android": { "package": "app.musicverse.android", "edgeToEdgeEnabled": true },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": { "typedRoutes": false }
+  }
+}
