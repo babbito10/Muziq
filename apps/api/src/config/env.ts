@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
 const bool = (fallback: boolean) =>
@@ -23,7 +24,9 @@ const envSchema = z
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
-    WEB_APP_URL: z.url().default('http://localhost:3000'),
+    WEB_APP_URL: z.url().optional(),
+    /** Set automatically by Render; used as WEB_APP_URL when that is not set. */
+    RENDER_EXTERNAL_URL: z.url().optional(),
     CORS_ORIGINS: csv,
     TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
     SWAGGER_ENABLED: bool(true),
@@ -37,13 +40,14 @@ const envSchema = z
     MFA_ENCRYPTION_KEY: z
       .string()
       .refine(
-        (v) => Buffer.from(v, 'base64').length === 32,
-        'MFA_ENCRYPTION_KEY must be 32 bytes, base64-encoded',
+        (v) => Buffer.from(v, 'base64').length === 32 || v.length >= 32,
+        'MFA_ENCRYPTION_KEY must be 32 bytes base64-encoded, or a random secret of at least 32 characters',
       ),
     COOKIE_SECURE: bool(true),
     RATE_LIMIT_ENABLED: bool(true),
 
-    MAIL_TRANSPORT: z.enum(['console', 'smtp']).default('console'),
+    // `none`: email delivery is not configured; every send fails visibly (no fake success).
+    MAIL_TRANSPORT: z.enum(['console', 'smtp', 'none']).default('console'),
     MAIL_FROM: z.string().min(3).default('MusicVerse <no-reply@musicverse.local>'),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.coerce.number().int().optional(),
@@ -105,7 +109,7 @@ export interface AppConfig {
   };
   rateLimitEnabled: boolean;
   mail: {
-    transport: 'console' | 'smtp';
+    transport: 'console' | 'smtp' | 'none';
     from: string;
     smtp: { host?: string; port?: number; secure: boolean; user?: string; password?: string };
   };
@@ -116,6 +120,16 @@ export interface AppConfig {
 }
 
 export class ConfigValidationError extends Error {}
+
+/**
+ * A 32-byte base64 key is used as-is (keeps existing encrypted data readable). Any other
+ * high-entropy secret of ≥32 characters (e.g. platform-generated values) is hashed to 32 bytes.
+ */
+export function deriveKey(value: string): Buffer {
+  const decoded = Buffer.from(value, 'base64');
+  if (decoded.length === 32 && decoded.toString('base64') === value) return decoded;
+  return createHash('sha256').update(value, 'utf8').digest();
+}
 
 /** Parse and validate the environment. Throws with every problem listed so boot fails fast. */
 export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -132,7 +146,10 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     isProduction: env.NODE_ENV === 'production',
     port: env.PORT,
     logLevel: env.LOG_LEVEL,
-    webAppUrl: env.WEB_APP_URL.replace(/\/$/, ''),
+    webAppUrl: (env.WEB_APP_URL ?? env.RENDER_EXTERNAL_URL ?? 'http://localhost:3000').replace(
+      /\/$/,
+      '',
+    ),
     corsOrigins: env.CORS_ORIGINS,
     trustProxy: env.TRUST_PROXY,
     swaggerEnabled: env.SWAGGER_ENABLED,
@@ -142,7 +159,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       accessSecret: env.JWT_ACCESS_SECRET,
       accessTtlSeconds: env.JWT_ACCESS_TTL_SECONDS,
       refreshTtlDays: env.REFRESH_TOKEN_TTL_DAYS,
-      mfaEncryptionKey: Buffer.from(env.MFA_ENCRYPTION_KEY, 'base64'),
+      mfaEncryptionKey: deriveKey(env.MFA_ENCRYPTION_KEY),
       cookieSecure: env.COOKIE_SECURE,
     },
     rateLimitEnabled: env.RATE_LIMIT_ENABLED,

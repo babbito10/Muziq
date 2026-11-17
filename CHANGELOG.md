@@ -5,6 +5,16 @@ versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Render preview deployment: `render.yaml` and a single-container image serving web, API (`/api`)
+  and admin console (`/admin`) on one origin.
+- `MAIL_TRANSPORT=none` for running without an email provider (sends fail visibly).
+- API falls back to `RENDER_EXTERNAL_URL` for email links; platform-generated secrets accepted as
+  the MFA key (hashed to 32 bytes).
+
+### Changed
+- The seed no longer aborts a deployment when `SEED_ADMIN_*` values are invalid (it logs an error).
+
 ## [0.1.0] — 2026-11-17 — Phase 1: Foundation
 
 ### Added

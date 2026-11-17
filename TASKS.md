@@ -83,6 +83,8 @@ Legend: `[x]` done and verified by automated tests or a recorded manual check ·
 - [x] Terraform platform module + dev/staging/prod roots (formatted)
 - [~] `terraform validate` — runs in CI; could not run in the build sandbox (registry blocked)
 - [ ] Deploy workflow (blocked: needs GCP projects + Workload Identity Federation)
+- [x] Render preview: single-container image + `render.yaml` (verified locally under a 512 MB limit
+      with Render-style env; blueprint itself not yet applied — needs the owner's Render account)
 
 ### Phase 1 follow-ups (security & quality hardening)
 - [ ] Nonce-based Content-Security-Policy (`script-src`) for web/admin

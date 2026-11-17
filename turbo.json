@@ -7,7 +7,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": ["NEXT_PUBLIC_*"]
+      "env": ["NEXT_PUBLIC_*", "BUNDLED_API_URL", "BUNDLED_ADMIN_URL", "ADMIN_BASE_PATH"]
     },
     "typecheck": {
       "dependsOn": ["^build"]

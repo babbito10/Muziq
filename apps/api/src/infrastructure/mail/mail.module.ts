@@ -5,6 +5,7 @@ import { ConsoleMailTransport } from './console.transport';
 import { MailService } from './mail.service';
 import { MAIL_TRANSPORT } from './mail.types';
 import { SmtpMailTransport } from './smtp.transport';
+import { UnconfiguredMailTransport } from './unconfigured.transport';
 
 @Global()
 @Module({
@@ -15,7 +16,9 @@ import { SmtpMailTransport } from './smtp.transport';
       useFactory: (config: AppConfig) =>
         config.mail.transport === 'smtp'
           ? new SmtpMailTransport({ ...config.mail.smtp, host: config.mail.smtp.host! })
-          : new ConsoleMailTransport(),
+          : config.mail.transport === 'none'
+            ? new UnconfiguredMailTransport()
+            : new ConsoleMailTransport(),
     },
     MailService,
   ],

@@ -52,6 +52,21 @@ pnpm --filter @musicverse/mobile dev   # Expo
 With `MAIL_TRANSPORT=console` (the default in `apps/api/.env`), emails are **not sent** — the API
 log prints them, including verification links.
 
+## Deploy a preview to Render (fastest public link)
+
+[`render.yaml`](render.yaml) deploys everything as one Docker service plus a PostgreSQL database and
+a Key Value (Redis) instance, all on free plans:
+
+1. Sign in at [render.com](https://render.com) with GitHub and allow access to this repository.
+2. **New → Blueprint**, choose this repository and the branch to deploy.
+3. Enter `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (≥ 10 characters) for your first admin.
+4. **Apply.** The first build takes several minutes. Your link is `https://<service>.onrender.com`;
+   the admin console is at `/admin` and API docs at `/api/docs`.
+
+Free-tier limits: the service sleeps when idle (first request ≈ 1 minute), the free database
+expires after 30 days, and email is off (`MAIL_TRANSPORT=none`) until you add SMTP settings —
+until then users cannot verify their email (needed for creator capabilities).
+
 ## Testing
 
 ```bash

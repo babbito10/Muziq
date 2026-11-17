@@ -82,6 +82,18 @@ exist (e.g. Google/Apple sign-in return `503 PROVIDER_NOT_CONFIGURED`). Mocks ar
 keeps the row; `audit_logs` is append-only at the database level (trigger).
 **Consequences.** Foreign keys stay valid; legal holds can extend retention.
 
+## ADR-014 — Single-container preview deployment (Render)
+**Context.** A public link was needed before Google Cloud exists. On shared platform domains such as
+`*.onrender.com` (a public suffix), separate web and API services are *different sites*, so
+`SameSite=Strict` refresh cookies would not work.
+**Decision.** `allinone.Dockerfile` runs API, web and admin in one container behind the web app,
+which forwards `/api/*` and `/admin/*` to localhost (build-time rewrites, enabled only in this
+image). Same origin, one URL, no CORS. `TRUST_PROXY=1` (platform load balancer appends the client
+IP; the internal proxy forwards the header unchanged) — verified with a spoofed header.
+**Consequences.** Not horizontally split (fine for previews, ~135 MB RAM). Google Cloud keeps the
+separate images and ADR-009. `MAIL_TRANSPORT=none` lets production run without email while
+reporting send failures honestly.
+
 ## ADR-013 — Images without OS package installs
 **Context.** Smaller attack surface; build environments may restrict OS package mirrors.
 **Decision.** Alpine Node images with no `apk add` (base `libssl3` suffices for Prisma); init

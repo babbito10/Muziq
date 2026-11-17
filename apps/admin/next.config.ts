@@ -14,6 +14,8 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  // Set to "/admin" when served behind the web app in a single-container deployment.
+  basePath: process.env.ADMIN_BASE_PATH || undefined,
   output: 'standalone',
   poweredByHeader: false,
   reactStrictMode: true,

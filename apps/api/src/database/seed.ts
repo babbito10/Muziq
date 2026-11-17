@@ -128,12 +128,17 @@ async function main(): Promise<void> {
     console.info(
       `Synchronised ${ROLE_KEYS.length} roles and ${PERMISSION_KEYS.length} permissions.`,
     );
-    const admin = await ensureSuperAdmin(
-      prisma,
-      process.env.SEED_ADMIN_EMAIL,
-      process.env.SEED_ADMIN_PASSWORD,
-    );
-    console.info(`Super administrator: ${admin}.`);
+    try {
+      const admin = await ensureSuperAdmin(
+        prisma,
+        process.env.SEED_ADMIN_EMAIL,
+        process.env.SEED_ADMIN_PASSWORD,
+      );
+      console.info(`Super administrator: ${admin}.`);
+    } catch (error) {
+      // Invalid SEED_ADMIN_* values must not block a deployment; fix the values and redeploy.
+      console.error(`Super administrator NOT created: ${(error as Error).message}`);
+    }
   } finally {
     await prisma.$disconnect();
   }

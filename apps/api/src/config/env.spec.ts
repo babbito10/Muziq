@@ -37,6 +37,29 @@ describe('loadConfig', () => {
     }
   });
 
+  it('derives the web URL from Render and accepts generated secrets as the MFA key', () => {
+    const config = loadConfig({
+      ...base,
+      RENDER_EXTERNAL_URL: 'https://musicverse.onrender.com/',
+      MFA_ENCRYPTION_KEY: 'x'.repeat(44),
+      MAIL_TRANSPORT: 'none',
+    });
+    expect(config.webAppUrl).toBe('https://musicverse.onrender.com');
+    expect(config.auth.mfaEncryptionKey).toHaveLength(32);
+    expect(config.mail.transport).toBe('none');
+    expect(() => loadConfig({ ...base, MFA_ENCRYPTION_KEY: 'too-short' })).toThrow(
+      /MFA_ENCRYPTION_KEY/,
+    );
+    // A real 32-byte base64 key is used unchanged.
+    expect(loadConfig(base).auth.mfaEncryptionKey.equals(Buffer.alloc(32, 1))).toBe(true);
+  });
+
+  it('allows production without email configured (transport none)', () => {
+    expect(
+      loadConfig({ ...base, NODE_ENV: 'production', MAIL_TRANSPORT: 'none' }).isProduction,
+    ).toBe(true);
+  });
+
   it('refuses the development mail transport and insecure cookies in production', () => {
     expect(() => loadConfig({ ...base, NODE_ENV: 'production' })).toThrow(/MAIL_TRANSPORT/);
     expect(() =>
