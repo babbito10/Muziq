@@ -1,0 +1,7 @@
+# Copy to dev.tfvars (git-ignored). No secrets here — secrets live in Secret Manager.
+project_id = "musicverse-dev"
+region     = "europe-west1"
+image_tag  = "REPLACE_WITH_GIT_SHA"
+domain     = "musicverse.app"
+smtp_host  = "smtp.example-provider.com"
+smtp_user  = "REPLACE_ME"
