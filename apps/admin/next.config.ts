@@ -16,6 +16,8 @@ const config: NextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: new URL('../../', import.meta.url).pathname,
   eslint: { ignoreDuringBuilds: true },
+  // No next/image optimisation (artwork will be served pre-sized from the CDN), so no sharp.
+  images: { unoptimized: true },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

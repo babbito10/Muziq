@@ -9,3 +9,23 @@ onlyBuiltDependencies:
   - esbuild
   - prisma
   - unrs-resolver
+
+# Security overrides for transitive dependencies (see SECURITY.md → dependency policy).
+overrides:
+  # GHSA: stack exhaustion; pulled in by @prisma/config (CLI config loading only).
+  deepmerge-ts: "^8.0.0"
+  # GHSA: high-severity parser issues; Next.js pins an older 8.4.x. Same major, compatible.
+  postcss: "^8.5.18"
+
+# sharp is only used by next/image optimisation, which the apps disable (images.unoptimized).
+ignoredOptionalDependencies:
+  - sharp
+
+# Accepted audit exceptions. Each must be justified in SECURITY.md and re-reviewed at the next
+# Expo SDK upgrade (Phase 2). Server-side packages must never be added here.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-5p2g-fcmc-qvqq # image-size via Metro (mobile build tooling, developer machines only)
+    - GHSA-w3rx-r6r6-pgpr # image-size via Metro (mobile build tooling, developer machines only)
+    - GHSA-fc5q-39xc-vjpf # picomatch via @expo/cli (build tooling; no patched version exists)
+    - GHSA-qr28-fpjm-wq7f # decode-uri-component via expo-router deep-link parsing (on-device only)
