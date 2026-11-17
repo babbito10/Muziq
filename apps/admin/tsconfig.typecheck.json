@@ -1,0 +1,5 @@
+{
+  "//": "Standalone typecheck that ignores .next/ (rewritten concurrently by next build).",
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "src"]
+}

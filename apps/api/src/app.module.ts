@@ -22,6 +22,17 @@ import { UsersModule } from './modules/users/users.module';
 
 const REQUEST_ID = /^[A-Za-z0-9._-]{8,100}$/;
 
+/** Human-friendly logs in local development, only if the (dev-only) formatter is installed. */
+function prettyTransport(env: AppConfig['env']) {
+  if (env !== 'development') return undefined;
+  try {
+    require.resolve('pino-pretty');
+    return { target: 'pino-pretty', options: { singleLine: true } };
+  } catch {
+    return undefined; // e.g. production images, which install no dev dependencies
+  }
+}
+
 @Module({
   imports: [
     ConfigModule,
@@ -42,8 +53,7 @@ const REQUEST_ID = /^[A-Za-z0-9._-]{8,100}$/;
           },
           autoLogging: { ignore: (req: IncomingMessage) => (req.url ?? '').startsWith('/api/v1/health') },
           customProps: (req: IncomingMessage) => ({ userId: (req as { auth?: { userId: string } }).auth?.userId }),
-          transport:
-            config.env === 'development' ? { target: 'pino-pretty', options: { singleLine: true } } : undefined,
+          transport: prettyTransport(config.env),
         },
       }),
     }),

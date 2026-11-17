@@ -1,0 +1,15 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/.expo
+**/playwright-report
+**/test-results
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+infrastructure/terraform/**/.terraform
+apps/mobile
