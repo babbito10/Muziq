@@ -21,7 +21,8 @@ Status: v1.0 · Baseline: OWASP ASVS 4.0 Level 2 · Owner: Security Engineering
 - Login responses are uniform for unknown email vs wrong password (no account enumeration);
   `forgot password` always returns 202.
 - Access JWT 15 min; refresh token 30 days sliding, rotated on each use, stored hashed (SHA-256).
-  Reuse of a rotated refresh token ⇒ revoke the entire session family + audit event.
+  Reuse of a rotated refresh token more than 15 s after rotation ⇒ revoke the session + audit
+  event (reuse inside the window is a benign multi-tab race and only fails that request).
 - Web refresh cookie: `HttpOnly; Secure (non-local); SameSite=Strict; Path=/api/v1/auth`.
 - Verification/reset tokens: 32 random bytes, hashed at rest, single use, 24 h / 30 min expiry.
   Password reset revokes all sessions.
@@ -45,7 +46,9 @@ Status: v1.0 · Baseline: OWASP ASVS 4.0 Level 2 · Owner: Security Engineering
 - All input validated with Zod (strict objects — unknown keys rejected); bodies capped at 1 MB on
   JSON routes (uploads go directly to storage).
 - Prisma parameterises all queries; raw SQL only through tagged templates.
-- `helmet` headers; CSP on web/admin (admin: no third-party scripts).
+- `helmet` headers on the API. Web/admin send `X-Frame-Options: DENY`, `nosniff`, a strict
+  referrer policy and a baseline CSP (`frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+  object-src 'none'`). A full nonce-based `script-src` policy is a tracked Phase 2 hardening item.
 - CORS allow-list from configuration; credentials only for listed origins.
 - CSRF: access tokens are never in cookies; cookie-authenticated endpoints (`/auth/refresh`,
   `/auth/logout`) require `x-csrf-protection` header (forces CORS preflight) + SameSite=Strict.
@@ -58,7 +61,7 @@ Status: v1.0 · Baseline: OWASP ASVS 4.0 Level 2 · Owner: Security Engineering
 - Encryption at rest: Cloud SQL and GCS (Google-managed keys; CMEK option for production).
 - Field-level encryption for MFA secrets and (Phase 5) payout destination details.
 - PII minimisation: IP addresses stored truncated (/24 IPv4, /48 IPv6) in sessions & audit logs.
-- Logs redact `authorization`, `cookie`, `set-cookie`, `password`, `token` fields.
+- Logs redact `authorization`, `cookie` and `set-cookie` headers; request bodies are never logged.
 - Account deletion: immediate session revocation + `pending_deletion`; anonymisation job after
   30-day grace period; financial records retained per law with pseudonymised references.
 - Backups: Cloud SQL automated daily backups + PITR (7 days dev/staging, 30 days prod); quarterly

@@ -19,6 +19,7 @@ Base URL: `/api/v1` · Format: JSON (UTF-8) · Spec: OpenAPI 3 served at `/api/d
 | Rate limiting | Global default 120 req/min/IP; auth endpoints stricter (e.g. login 10/min/IP); `429` with `Retry-After`. |
 | Request IDs | `x-request-id` accepted or generated; echoed in responses and error bodies. |
 | CSRF | Cookie-authenticated endpoints require header `x-csrf-protection: 1` plus `SameSite=Strict` cookies. |
+| Cookies | `mv_refresh` (web) and `mv_admin_refresh` (admin), `HttpOnly; SameSite=Strict; Path=/api/v1/auth`, `Secure` outside local development. |
 
 ### Error envelope
 

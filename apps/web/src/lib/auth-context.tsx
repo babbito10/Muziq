@@ -17,9 +17,12 @@ import { api, onSessionExpired } from './api';
 import { applyTheme } from './theme';
 
 type Status = 'loading' | 'authenticated' | 'anonymous';
+/** Why the user is anonymous: never signed in / session expired, or a deliberate sign-out. */
+export type AnonymousReason = 'no_session' | 'signed_out';
 
 interface AuthContextValue {
   status: Status;
+  anonymousReason: AnonymousReason;
   user: CurrentUser | null;
   login(input: Omit<LoginInput, 'clientType'>): Promise<LoginResponse>;
   completeMfa(mfaToken: string, code: string): Promise<void>;
@@ -35,6 +38,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
   const [user, setUserState] = useState<CurrentUser | null>(null);
+  const [anonymousReason, setAnonymousReason] = useState<AnonymousReason>('no_session');
   const restored = useRef(false);
 
   const setUser = useCallback((next: CurrentUser) => {
@@ -43,7 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     applyTheme(next.preferences.theme);
   }, []);
 
-  const signOutLocally = useCallback(() => {
+  const signOutLocally = useCallback((reason: AnonymousReason = 'no_session') => {
+    setAnonymousReason(reason);
     setUserState(null);
     setStatus('anonymous');
   }, []);
@@ -52,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
-    onSessionExpired(signOutLocally);
+    onSessionExpired(() => signOutLocally('no_session'));
     (async () => {
       try {
         if (await api.auth.refresh()) setUser(await api.users.me());
@@ -96,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Local sign-out still happens; the server session expires on its own.
       if (!isApiError(error)) throw error;
     }
-    signOutLocally();
+    signOutLocally('signed_out');
   }, [signOutLocally]);
 
   const reload = useCallback(async () => {
@@ -104,8 +109,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setUser]);
 
   const value = useMemo(
-    () => ({ status, user, login, completeMfa, register, logout, setUser, reload }),
-    [status, user, login, completeMfa, register, logout, setUser, reload],
+    () => ({
+      status,
+      anonymousReason,
+      user,
+      login,
+      completeMfa,
+      register,
+      logout,
+      setUser,
+      reload,
+    }),
+    [status, anonymousReason, user, login, completeMfa, register, logout, setUser, reload],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

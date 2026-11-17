@@ -41,14 +41,20 @@ erDiagram
 | `permissions` | `id`, `key` (`catalogue:upload`…), `description` | unique(`key`) |
 | `role_permissions` | (`role_id`,`permission_id`) | PK composite |
 | `user_roles` | (`user_id`,`role_id`), `granted_by_id`, `created_at` | PK composite; idx(`role_id`) |
-| `sessions` | `id`, `user_id`, `refresh_token_hash`, `family_id`, `user_agent`, `ip_address`, `client_type` (`web`,`mobile`,`admin`), `expires_at`, `last_used_at`, `revoked_at`, `revoked_reason` | unique(`refresh_token_hash`); idx(`user_id`,`revoked_at`); idx(`family_id`) |
+| `sessions` | `id`, `user_id`, `refresh_token_hash`, `previous_token_hash`, `user_agent`, `ip_address`, `client_type` (`web`,`mobile`,`admin`), `expires_at`, `last_used_at`, `revoked_at`, `revoked_reason` | unique(`refresh_token_hash`); unique(`previous_token_hash`); idx(`user_id`,`revoked_at`); idx(`expires_at`) |
 | `verification_tokens` | `id`, `user_id`, `type` (`email_verification`,`password_reset`), `token_hash`, `expires_at`, `consumed_at` | unique(`token_hash`); idx(`user_id`,`type`) |
 | `oauth_accounts` | `id`, `user_id`, `provider` (`google`,`apple`), `provider_account_id`, `email` | unique(`provider`,`provider_account_id`); idx(`user_id`) |
 | `mfa_factors` | `id`, `user_id`, `type` (`totp`), `secret_encrypted`, `confirmed_at`, `last_used_step` | unique(`user_id`,`type`) |
 | `audit_logs` | `id`, `actor_id` (nullable), `action`, `target_type`, `target_id`, `ip_address`, `user_agent`, `request_id`, `metadata jsonb`, `created_at` | idx(`actor_id`,`created_at`); idx(`target_type`,`target_id`); idx(`action`,`created_at`) |
 
-`sessions.refresh_token_hash` is rotated on every refresh; `family_id` links rotations so token
-reuse revokes the family. `mfa_factors.last_used_step` prevents TOTP replay.
+A `sessions` row *is* the token family: `refresh_token_hash` is rotated on every refresh and the
+prior value moves to `previous_token_hash`, so replaying it after the grace window revokes the
+session. `mfa_factors.last_used_step` prevents TOTP replay. `users.suspended_reason` records why
+an account was suspended.
+
+Implemented integrity rules beyond Prisma (migration `integrity_constraints`): lower-case CHECKs
+on `users.email` and `user_profiles.username`, `sessions.expires_at > created_at`, and a trigger
+that makes `audit_logs` append-only (UPDATE/DELETE raise an error).
 
 ## 3. Artists (Phase 2)
 

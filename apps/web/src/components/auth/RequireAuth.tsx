@@ -5,15 +5,22 @@ import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 
-/** Client-side gate for signed-in pages. The API enforces authorisation regardless. */
+/**
+ * Client-side gate for signed-in pages (the API enforces authorisation regardless). Visitors
+ * without a session go to sign-in and come back; a deliberate sign-out (or account deletion)
+ * goes to the home page.
+ */
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { status } = useAuth();
+  const { status, anonymousReason } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (status === 'anonymous') router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [status, router, pathname]);
+    if (status !== 'anonymous') return;
+    router.replace(
+      anonymousReason === 'signed_out' ? '/' : `/login?next=${encodeURIComponent(pathname)}`,
+    );
+  }, [status, anonymousReason, router, pathname]);
 
   if (status !== 'authenticated') {
     return (

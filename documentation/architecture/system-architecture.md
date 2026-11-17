@@ -26,7 +26,7 @@ later without a rewrite. (ADR-002)
                 ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
  Users ───────▶ │  Web (Next)  │   │ Admin (Next) │   │ Mobile (Expo)│
                 └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
-                       │ HTTPS (same-site /api rewrite)       │ HTTPS + bearer
+                       │ HTTPS (same-site, CORS allow-list)   │ HTTPS + bearer
                        ▼                  ▼                  ▼
                ┌──────────────────────────────────────────────────────┐
                │             API  (NestJS, Cloud Run)                 │
@@ -78,6 +78,8 @@ apps/api/src
 ├── main.ts                     bootstrap: helmet, cookies, CORS, versioning, Swagger, shutdown hooks
 ├── app.module.ts
 ├── config/                     zod-validated environment (fail fast on boot)
+├── database/seed.ts            idempotent role/permission sync + optional first super admin
+├── jobs/                       one-off/scheduled entrypoints (purge-deleted-accounts)
 ├── common/
 │   ├── errors/                 AppError, error codes, global exception filter
 │   ├── validation/             ZodBody/ZodQuery DTO helpers + ZodValidationPipe
@@ -118,8 +120,9 @@ in `@musicverse/validation`, permissions in `@musicverse/auth`.
 - **Access token**: JWT (HS256 in Phase 1; RS256/KMS planned for multi-service), 15 min, carries
   `sub`, `sid` (session id), `roles`. Sent as `Authorization: Bearer`.
 - **Refresh token**: 256-bit random opaque token, stored **hashed** (SHA-256) in `sessions`;
-  **rotated on every use**; reuse of a rotated token revokes the whole session family
-  (token-theft detection).
+  **rotated on every use** with optimistic concurrency. The previous hash is retained; presenting
+  it more than 15 s after rotation revokes the session (token-theft detection), while a reuse
+  inside that window — two tabs refreshing at once — is answered with `INVALID_TOKEN` only.
   - Web/admin: `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth` cookie.
   - Mobile: returned in body, stored in the OS keychain (`expo-secure-store`).
 - **Session** row per device: user agent, IP (truncated), created/last-used, revoked flag.
@@ -139,6 +142,9 @@ RBAC + resource ownership:
   `admin`, `super_admin`) map to **permissions** (`catalogue:upload`, `admin:users.read`, …).
   The canonical matrix lives in `@musicverse/auth` and is synced to the `roles`/`permissions`
   tables by the seed.
+- On every authenticated request the guard resolves session validity and the user's roles
+  through a Redis cache (60 s TTL, explicitly invalidated on logout, suspension and role changes,
+  database fallback when Redis is down), so revocations apply immediately despite stateless JWTs.
 - Capability roles (`artist`, `producer`, `dj`, `business`, `educator`) are self-service.
   Staff roles (`moderator`, `admin`, `super_admin`) can only be granted by an admin and are
   audit-logged.
@@ -181,9 +187,11 @@ data }`; consumers are idempotent (dedupe by message id). A transactional **outb
 
 ## 10. Clients
 
-- **Web** (Next.js App Router, React 19, Tailwind v4). Calls the API via a same-origin rewrite
-  (`/api/v1/* → API_URL`) so refresh cookies are first-party and CORS is avoided. Access token
-  is kept in memory only.
+- **Web** (Next.js App Router, React 19, Tailwind v4). Browsers call the API directly
+  (`api.<domain>`, same-site with the web origin, CORS allow-listed) so `SameSite=Strict` refresh
+  cookies work and the API sees real client IPs for rate limiting. The API URL is injected per
+  request from `PUBLIC_API_URL`, so one image is promoted across environments (ADR-009). The
+  access token is kept in memory only.
 - **Admin** — separate Next.js app/domain; only users with `admin:*` permissions can sign in.
 - **Mobile** — Expo Router; tokens in SecureStore; same API client.
 - **Audio** — `@musicverse/audio-player` holds queue/shuffle/repeat state; platform adapters wrap

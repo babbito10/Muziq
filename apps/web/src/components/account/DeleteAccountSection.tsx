@@ -2,7 +2,6 @@
 
 import { Alert, Button, Card, CardHeader, TextField } from '@musicverse/ui';
 import { deleteAccountSchema } from '@musicverse/validation';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -10,14 +9,13 @@ import { useZodForm } from '@/lib/use-zod-form';
 
 export function DeleteAccountSection() {
   const { user, logout } = useAuth();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmText, setConfirmText] = useState('');
   const form = useZodForm(deleteAccountSchema, async (values) => {
     await api.users.deleteAccount(values);
+    // Clears the refresh cookie; RequireAuth then sends the (now signed-out) visitor home.
     await logout().catch(() => undefined);
-    router.push('/');
   });
   if (!user) return null;
 
